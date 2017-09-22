@@ -5,7 +5,6 @@ import Imagenes.PanelPrincipal;
 import java.awt.Color;
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
@@ -19,12 +18,17 @@ public class VentanaPrincipal extends JFrame
     // Variable para realizar el dibujado del poligono y las soluciones validas del ejercicio 4
     Graficador dibujo = new Graficador();
     
-    // Variables para alamcenar las coordenadas de los vertices del poligono de estudio
+    // Variables para almacenar las coordenadas de los vertices del poligono de estudio
     ArrayList XVertices = new ArrayList();
     ArrayList YVertices = new ArrayList();
     
+    // Variable para guardar los segmentos o aristas validas dentro del poligono
+    ArrayList<List> listaSegmentos = new ArrayList();
+    
+    // Variable para guardar los pares de segmentos que no se intersectan dentro del poligono
     ArrayList<List> listaFormas = new ArrayList();
     
+    // Variable para guardar una etiqueta o representacion simbolica de la forma que se encontro y que se mostrara en Jlist
     DefaultListModel<String> listaFormasImpresa = new  DefaultListModel();
     
     // Variable para saber que forma se quiere dibujar
@@ -49,6 +53,7 @@ public class VentanaPrincipal extends JFrame
     public void limpiarPantalla()
     {
         // Limpio la lista y el indice seleccionado de la lista
+        listaSegmentos.clear();
         listaFormas.clear();
         listaFormasImpresa.clear();
         jlFormas.setModel(listaFormasImpresa);
@@ -67,17 +72,17 @@ public class VentanaPrincipal extends JFrame
     }
     
     /**
-     * Realiza el Proceso de Combinatoria
+     * Metodo para realizar el proceso de combinatoria de vectores para formar segmentos validos
      *
-     * @param objACombinar lista de objetos a combinar
-     * @param m cantidad de posiciones
+     * @param objACombinar lista de vertices a combinar
      */
-    public void combinar(List<String> objACombinar, int m) {
- 
-        IteradorCombinacion it = new IteradorCombinacion(objACombinar, m);
+    public void combinarVectores(List<String> objACombinar)
+    {
+        // En primer lugar
+        IteradorCombinacion it = new IteradorCombinacion(objACombinar, 2);
         Iterator secuenciador = it.iterator();
         
-        listaFormas.clear();
+        listaSegmentos.clear();
         List aux;
         
         while (secuenciador.hasNext())
@@ -89,8 +94,33 @@ public class VentanaPrincipal extends JFrame
             
             if ((Math.abs(v2-v1) != 1) && (Math.abs(v2-v1) != objACombinar.size()-1))
             {
-                listaFormas.add(aux);
+                listaSegmentos.add(aux);
             }
+        }
+    }
+    
+    /**
+     * Metodo para realizar el proceso de combinatoria de vectores para formar segmentos validos
+     *
+     * @param objACombinar lista de vertices a combinar
+     * @param m cantidad de posiciones
+     */
+    public void combinarSegmentos(List<String> objACombinar, int m)
+    {
+        IteradorCombinacion it = new IteradorCombinacion(objACombinar, m);
+        Iterator secuenciador = it.iterator();
+        
+        List aux;
+        int contador = 1;
+        while (secuenciador.hasNext())
+        {
+            aux = (List) (secuenciador.next());
+            
+            System.out.print("Forma " + contador + ": ");
+            System.out.print(aux.toString() + "\n");
+            
+            contador++;
+            listaFormas.add(aux);
         }
     }
     
@@ -221,15 +251,10 @@ public class VentanaPrincipal extends JFrame
         jpFormas.setOpaque(false);
 
         jlFormas.setFont(new java.awt.Font("SansSerif", 0, 20)); // NOI18N
-        jlFormas.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
         jlFormas.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jlFormas.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jlFormasMouseClicked(evt);
+        jlFormas.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                jlFormasValueChanged(evt);
             }
         });
         jspFormas.setViewportView(jlFormas);
@@ -290,8 +315,15 @@ public class VentanaPrincipal extends JFrame
             return;
         }
         
-        // Si pasa aqui entonces se recupera el numero de vertices que tendra el poligono
-        float numVertices = Float.parseFloat(jtNumVectores.getText());
+        // Limpio la lista y el indice seleccionado de la lista
+        listaFormas.clear();
+        listaFormasImpresa.clear();
+        jlFormas.setModel(listaFormasImpresa);
+        jlFormas.clearSelection();
+        indiceSeleccionado = -1;
+        
+        // Si pasa aqui entonces se recupera el numero de vertices que tendra el poligono y se multiplica por 2
+        float numVertices = Float.parseFloat(jtNumVectores.getText()); 
         
         // Se calcula el radio que tendra el poligono en base al ancho del area de dibujo [Donde el ancho y el alto de tal area deben ser iguales]
         int radioPoligono = jlAreaDibujo.getWidth()/2 - 30;
@@ -325,6 +357,7 @@ public class VentanaPrincipal extends JFrame
         jlAreaDibujo.setIcon(imagenPoligono);
     }//GEN-LAST:event_jbDibujarActionPerformed
 
+    // Evento para realizar el analisis de los segmentos que no se intersectan
     private void jbAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAnalizarActionPerformed
         // Si no hay vertices almacenados entonces se retorna de inmediato
         if (XVertices.isEmpty())
@@ -332,33 +365,49 @@ public class VentanaPrincipal extends JFrame
             return;
         }
         
-        // Si los hay entonces se crea una lista vacia de todos lo vertices que vamos a analizar y se guarda cuantos son
-        List<String> segmentosPosibles = new ArrayList();
+        // Si los hay entonces se crea una lista vacia para todos los vertices que vamos a analizar y se guarda cuantos son
+        List<String> vertices = new ArrayList();
         int numVertices = XVertices.size();
         
-        // Se rellena tal lista de vertices
+        // Luego, se rellena tal lista con cada uno de los vertices
         for (int i = 0; i < numVertices; i++)
         {
-            segmentosPosibles.add(Integer.toString(i));
+            vertices.add(Integer.toString(i));
         }
         
-        // Y se procede a hacer la combinacion sin repeticion
-        combinar(segmentosPosibles, 2);
+        // Y se procede a hacer la combinacion de vertices sin repeticion, cuyo resultado son los segmentos validos
+        combinarVectores(vertices);
         
+        // Despues, se imprime por consola dichos segmentos solo a forma de debugging y se crea tambien una lista de segmentos, la cual esta ultima se llenara con el numero del segmento en si
+        System.out.println("Segmentos individuales Validos: ");
+        List aux1;
+        List<String> segmentos = new ArrayList();
+        for (int i = 0; i < listaSegmentos.size(); i++)
+        {
+            aux1 = listaSegmentos.get(i);
+            System.out.println("Arista " + (i+1) + ": " + aux1.get(0).toString() + " con " + aux1.get(1).toString());
+            segmentos.add(Integer.toString(i));
+        }
         
-        
-        
-        // Luego se procede a
-        
-        
-        
-        listaFormasImpresa.clear();
-        List aux;
+        // De igual forma que como se hizo con los vertices, tambien se hace una combinatoria de segmentos pero esta vez se consideran 1, 2, ... hasta n-3 posiciones en la combinatoria
+        listaFormas.clear();
+        for(int i = 1; i <= numVertices-3; i++)
+        {
+            combinarSegmentos(segmentos, i);
+        }
         
         for (int i = 0; i < listaFormas.size(); i++)
         {
-            aux = listaFormas.get(i);
-            listaFormasImpresa.addElement("Forma " + (i+1) + ": " + aux.get(0).toString() + " con " + aux.get(1).toString());
+            aux1 = listaFormas.get(i);
+            String temp = "Forma " + (i+1) + ": |";
+            
+            for (int j = 0; j < aux1.size(); j++)
+            {
+                List aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(j).toString()));
+                temp = temp + aux2.get(0).toString() + "-" + aux2.get(1).toString() + "|";
+            }
+            
+            listaFormasImpresa.addElement(temp);
         }
         
         jlFormas.setModel(listaFormasImpresa);
@@ -387,34 +436,50 @@ public class VentanaPrincipal extends JFrame
         }
     }//GEN-LAST:event_jtNumVectoresKeyTyped
     
-    // Los siguientes dos eventos son para determinar cual solucion se quiere dibujar y en que momento hacer el dibujado
-    
-    private void jlFormasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jlFormasMouseClicked
-        // Si no hay forma almacenados entonces se retorna de inmediato
-        if (listaFormas.isEmpty())
+    // Evento para determinar cual solucion se quiere dibujar
+    private void jlFormasValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jlFormasValueChanged
+        // Esto previene que el evento se dispare 2 veces
+        // Para saber porque este evento se dispara 2 veces vea: https://stackoverflow.com/questions/12461627/jlist-fires-valuechanged-twice-when-a-value-is-changed-via-mouse
+        if (evt.getValueIsAdjusting()) {
+            return;
+        }
+
+        // Si no hay formas almacenados entonces se retorna de inmediato
+        if (listaSegmentos.isEmpty())
         {
             return;
         }
         
-        indiceSeleccionado = jlFormas.getSelectedIndex(); // Obtengo la forma seleccionada
+        // Si las hay entonces, primero obtengo el indice seleccionado
+        indiceSeleccionado = jlFormas.getSelectedIndex();
         
-        if (indiceSeleccionado != -1) // Si la lista tiene por lo menos una forma y se ha elegido una de ellas entonces
+        // Luego, Si la lista de formas tiene por lo menos una y el indice elegido es una de ellas entonces
+        if (indiceSeleccionado != -1)
         {
-            List aux = listaFormas.get(indiceSeleccionado);
+            // Limpio y vuelvo a dibujar el poligono
+            dibujo.limpiar();
+            dibujo.dibujarPoligono(XVertices, YVertices, jlAreaDibujo.getWidth()/2, jlAreaDibujo.getWidth()/2, true);
             
-            int x1 = (int) XVertices.get(Integer.parseInt(aux.get(0).toString()));
-            int y1 = (int) YVertices.get(Integer.parseInt(aux.get(0).toString()));
+            // Posteriormente, dibujo la forma o solucion dentro del poligono
+            List aux1 = listaFormas.get(indiceSeleccionado);
             
-            int x2 = (int) XVertices.get(Integer.parseInt(aux.get(1).toString()));
-            int y2 = (int) YVertices.get(Integer.parseInt(aux.get(1).toString()));
+            for (int i = 0; i < aux1.size(); i++)
+            {
+                List aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(i).toString()));
+                
+                int x1 = (int) XVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                int y1 = (int) YVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                int x2 = (int) XVertices.get(Integer.parseInt(aux2.get(1).toString()));
+                int y2 = (int) YVertices.get(Integer.parseInt(aux2.get(1).toString()));
+
+                dibujo.dibujarArista(x1, y1, x2, y2, Color.darkGray);
+            }
             
-            dibujo.dibujarArista(x1, y1, x2, y2, Color.darkGray);
-            
-            // Finalmente, se muestra en pantalla el dibujo del poligono 
+            // Y finalmente, se muestra en pantalla el dibujo del poligono con la solucion dentro
             Icon imagenFormaElegida = dibujo.retornarLienzo();
             jlAreaDibujo.setIcon(imagenFormaElegida);
         }
-    }//GEN-LAST:event_jlFormasMouseClicked
+    }//GEN-LAST:event_jlFormasValueChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jbAnalizar;
