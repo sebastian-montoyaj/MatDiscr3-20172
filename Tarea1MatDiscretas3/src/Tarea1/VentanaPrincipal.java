@@ -69,18 +69,28 @@ public class VentanaPrincipal extends JFrame
     /**
      * Realiza el Proceso de Combinatoria
      *
-     * @param a lista de objetos a combinar
+     * @param objACombinar lista de objetos a combinar
      * @param m cantidad de posiciones
      */
-    public void combinar(List<String> a, int m) {
+    public void combinar(List<String> objACombinar, int m) {
  
-        IteradorCombinacion it = new IteradorCombinacion(a, m);
+        IteradorCombinacion it = new IteradorCombinacion(objACombinar, m);
         Iterator secuenciador = it.iterator();
         
         listaFormas.clear();
+        List aux;
+        
         while (secuenciador.hasNext())
         {
-            listaFormas.add((List) (secuenciador.next()));
+            aux = (List) (secuenciador.next());
+            
+            int v1 = Integer.parseInt(aux.get(0).toString());
+            int v2 = Integer.parseInt(aux.get(1).toString());
+            
+            if ((Math.abs(v2-v1) != 1) && (Math.abs(v2-v1) != objACombinar.size()-1))
+            {
+                listaFormas.add(aux);
+            }
         }
     }
     
@@ -308,7 +318,7 @@ public class VentanaPrincipal extends JFrame
         }
         
         // Ya con todas las posiciones estimadas de los vertices se procede a dibujar dichos vertices
-        dibujo.dibujarPoligono(XVertices, YVertices, xCentro, yCentro, false);
+        dibujo.dibujarPoligono(XVertices, YVertices, xCentro, yCentro, true);
         
         // Finalmente, se muestra en pantalla el dibujo del poligono 
         Icon imagenPoligono = dibujo.retornarLienzo();
