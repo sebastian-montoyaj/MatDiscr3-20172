@@ -26,6 +26,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import javax.swing.Icon;
@@ -194,6 +195,12 @@ public class Graficador
         // Y retorno la imagen del poligono como si fuera un icono
         Icon graficaPoligono = new ImageIcon(superficie);
         return graficaPoligono; 
+    }
+    
+    // Metodo para revisar si dos segmentos de linea se intersectan
+    public boolean revisarInterseccion(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
+    {
+        return Line2D.linesIntersect(x1,y1,x2,y2,x3,y3,x4,y4);
     }
     
     public Icon retornarLienzo() // METODO TEMPORAL para hacer pruebas [Creo que a la final no lo incluire]

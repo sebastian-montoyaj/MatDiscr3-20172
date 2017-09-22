@@ -110,17 +110,46 @@ public class VentanaPrincipal extends JFrame
         IteradorCombinacion it = new IteradorCombinacion(objACombinar, m);
         Iterator secuenciador = it.iterator();
         
-        List aux;
+        List aux1;
+        List aux2;
         int contador = 1;
-        while (secuenciador.hasNext())
+        loopForma:while (secuenciador.hasNext())
         {
-            aux = (List) (secuenciador.next());
+            aux1 = (List) (secuenciador.next());
+            
+            for (int k = 0; k < aux1.size(); k++)
+            {
+                for (int j = 0; j < aux1.size(); j++)
+                {
+                    if (k<j)
+                    {
+                        aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(k).toString()));
+                
+                        int x1 = (int) XVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                        int y1 = (int) YVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                        int x2 = (int) XVertices.get(Integer.parseInt(aux2.get(1).toString()));
+                        int y2 = (int) YVertices.get(Integer.parseInt(aux2.get(1).toString()));
+                        
+                        aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(j).toString()));
+                
+                        int x3 = (int) XVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                        int y3 = (int) YVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                        int x4 = (int) XVertices.get(Integer.parseInt(aux2.get(1).toString()));
+                        int y4 = (int) YVertices.get(Integer.parseInt(aux2.get(1).toString()));
+                        
+                        if (dibujo.revisarInterseccion(x1, y1, x2, y2, x3, y3, x4, y4))
+                        {
+                            continue loopForma;
+                        }
+                    }
+                }
+            }
             
             System.out.print("Forma " + contador + ": ");
-            System.out.print(aux.toString() + "\n");
+            System.out.print(aux1.toString() + "\n");
             
             contador++;
-            listaFormas.add(aux);
+            listaFormas.add(aux1);
         }
     }
     
