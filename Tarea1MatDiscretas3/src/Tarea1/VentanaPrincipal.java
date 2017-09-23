@@ -425,6 +425,34 @@ public class VentanaPrincipal extends JFrame
             combinarSegmentos(segmentos, i);
         }
         
+        System.out.println("---");
+        loopForma:for(int i = listaFormas.size()-1; i >= 0; i--)
+        {
+            for (int j = i - 1; j >= 0; j--)
+            {
+                int dif = Math.abs(listaFormas.get(i).size() - listaFormas.get(j).size());
+                if ((dif == 0) || (dif > 2))
+                {
+                    continue;
+                }
+                
+                List temp = new ArrayList<Integer>(listaFormas.get(i));
+                
+                temp.retainAll(listaFormas.get(j));
+                
+                System.out.println(listaFormas.get(j).toString());
+                System.out.println(listaFormas.get(i).toString());
+                System.out.println(temp.toString());
+                System.out.println("----");
+                
+                if (temp.size() == listaFormas.get(j).size())
+                {
+                    listaFormas.remove(j);
+                    continue loopForma;
+                }
+            }
+        }
+        
         for (int i = 0; i < listaFormas.size(); i++)
         {
             aux1 = listaFormas.get(i);
