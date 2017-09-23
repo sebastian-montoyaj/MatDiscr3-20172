@@ -25,7 +25,7 @@ public class VentanaPrincipal extends JFrame
     // Variable para guardar los segmentos o aristas validas dentro del poligono
     ArrayList<List> listaSegmentos = new ArrayList();
     
-    // Variable para guardar los pares de segmentos que no se intersectan dentro del poligono
+    // Variable para guardar los pares de segmentos que no se intersectan dentro del poligono (O mejor dicho soluciones)
     ArrayList<List> listaFormas = new ArrayList();
     
     // Variable para guardar una etiqueta o representacion simbolica de la forma que se encontro y que se mostrara en Jlist
@@ -78,81 +78,98 @@ public class VentanaPrincipal extends JFrame
      */
     public void combinarVectores(List<String> objACombinar)
     {
-        // En primer lugar
+        // En primer lugar, creo un objeto IteradorCombinacion el cual le indico que vertices debe combinar y que lo haga en pares
         IteradorCombinacion it = new IteradorCombinacion(objACombinar, 2);
+        
+        // Despues realizo la combinacion y obtengo la lista de combinaciones
         Iterator secuenciador = it.iterator();
         
+        // Limpio la lista de segmentos antes de agregarle las combinaciones que se obtuvieron
         listaSegmentos.clear();
+        
+        // Creo una variable auxiliar para leer las combinaciones
         List aux;
         
+        // Ahora, Mientras existan combinaciones por leer haga
         while (secuenciador.hasNext())
         {
+            // Obtengo la combinacion actual y muevo el puntero de lectura a la siguiente
             aux = (List) (secuenciador.next());
             
+            // Luego, recupero que vertices conforman el segmento
             int v1 = Integer.parseInt(aux.get(0).toString());
             int v2 = Integer.parseInt(aux.get(1).toString());
             
+            // Y si dichos vertices NO se encuentran dentro del perimetro del poligono entonces
             if ((Math.abs(v2-v1) != 1) && (Math.abs(v2-v1) != objACombinar.size()-1))
             {
+                // Agrego tal segmento a la lista de segmentos validos
                 listaSegmentos.add(aux);
             }
         }
+        
+        // Una vez termina el ciclo anterior en listaSegmentos quedan depositados los segmentos validos
     }
     
     /**
-     * Metodo para realizar el proceso de combinatoria de vectores para formar segmentos validos
+     * Metodo para realizar el proceso de combinatoria de segmentos (crear soluciones) y filtrar aquellos que se intersectan
      *
-     * @param objACombinar lista de vertices a combinar
+     * @param objACombinar lista de segmentos a combinar
      * @param m cantidad de posiciones
      */
     public void combinarSegmentos(List<String> objACombinar, int m)
     {
+        // En primer lugar, creo un objeto IteradorCombinacion el cual le indico que segmentos debe combinar y que lo haga de m elementos
         IteradorCombinacion it = new IteradorCombinacion(objACombinar, m);
+        
+        // Despues realizo la combinacion y obtengo la lista de combinaciones de segmentos (O soluciones)
         Iterator secuenciador = it.iterator();
         
+        // Ahora, creo dos variables auxiliares para leer soluciones y segmentos
         List aux1;
         List aux2;
-        int contador = 1;
+        
+        // Mientras, haya soluciones por leer haga
         loopForma:while (secuenciador.hasNext())
         {
+            // Obtengo la solucion y muevo el apuntador a la siguiente
             aux1 = (List) (secuenciador.next());
             
+            // Despues, para el segmento de la posicion k de la solucion, donde k comienza en 0 y se mueve hasta el ultimo segmento de la solucion haga
             for (int k = 0; k < aux1.size(); k++)
             {
-                for (int j = 0; j < aux1.size(); j++)
+                // A su vez para el segmento de la posicion j de la solucion, donde j comienza en el segmento siguiente hasta el ultimo haga
+                for (int j = k+1; j < aux1.size(); j++)
                 {
-                    if (k<j)
+                    // Recupero los vertices que componen el segmento k
+                    aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(k).toString()));
+                    // Y obtengo las coordenadas de los vertices que componente este segmento
+                    int x1 = (int) XVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                    int y1 = (int) YVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                    int x2 = (int) XVertices.get(Integer.parseInt(aux2.get(1).toString()));
+                    int y2 = (int) YVertices.get(Integer.parseInt(aux2.get(1).toString()));
+
+                    // De igual forma, recupero los vertices que componen el segmento j
+                    aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(j).toString()));
+                    // Y tambien obtengo las coordenadas de los vertices que componente este segmento
+                    int x3 = (int) XVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                    int y3 = (int) YVertices.get(Integer.parseInt(aux2.get(0).toString()));
+                    int x4 = (int) XVertices.get(Integer.parseInt(aux2.get(1).toString()));
+                    int y4 = (int) YVertices.get(Integer.parseInt(aux2.get(1).toString()));
+                    
+                    // Por ultimo, si los segmentos elegidos de esta solucion se intersectan entonces
+                    if (dibujo.revisarInterseccion(x1, y1, x2, y2, x3, y3, x4, y4))
                     {
-                        aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(k).toString()));
-                
-                        int x1 = (int) XVertices.get(Integer.parseInt(aux2.get(0).toString()));
-                        int y1 = (int) YVertices.get(Integer.parseInt(aux2.get(0).toString()));
-                        int x2 = (int) XVertices.get(Integer.parseInt(aux2.get(1).toString()));
-                        int y2 = (int) YVertices.get(Integer.parseInt(aux2.get(1).toString()));
-                        
-                        aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(j).toString()));
-                
-                        int x3 = (int) XVertices.get(Integer.parseInt(aux2.get(0).toString()));
-                        int y3 = (int) YVertices.get(Integer.parseInt(aux2.get(0).toString()));
-                        int x4 = (int) XVertices.get(Integer.parseInt(aux2.get(1).toString()));
-                        int y4 = (int) YVertices.get(Integer.parseInt(aux2.get(1).toString()));
-                        
-                        if (dibujo.revisarInterseccion(x1, y1, x2, y2, x3, y3, x4, y4))
-                        {
-                            continue loopForma;
-                        }
+                        // Se pasa la siguiente solucion y esta no se incluye en la lista de formas o soluciones validas
+                        continue loopForma;
                     }
                 }
             }
             
-            System.out.print("Forma " + contador + ": ");
-            System.out.print(aux1.toString() + "\n");
-            
-            contador++;
+            // Si pasa aqui, es porque ningun segmento de la solucion que se esta estudiando actualmente se intersecta y por tanto se agrega como solucion valida cuyas rectas no se cruzan o comparten vertices comunes
             listaFormas.add(aux1);
         }
     }
-    
     
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -336,7 +353,18 @@ public class VentanaPrincipal extends JFrame
         pack();
     }// </editor-fold>//GEN-END:initComponents
     
-    // Evento para dibujar el poligono de n lados
+    // Evento para dibujar el poligono REGULAR de n lados
+    // 
+    // NOTA:
+    // Un poligono regular TIENE que ser CONVEXO. No es posible dibujar poligonos regulares NO CONVEXOS
+    // ya que la NO CONVEXIDAD implica que el poligono regular sea CONCAVO. Por lo tanto, los poligonos
+    // regulares NUNCA pueden ser CONCAVOS por que asi lo dice su definicion.
+    // Entonces, como el ejercicio planteado solo pide considerar poligonos regulares eso es lo que se
+    // se va a hacer... Y la forma mas facil de dibujar un poligno regular es ubicando todos sus puntos
+    // en una circunferencia.
+    // Por lo anterior no se considera el dibujado de poligonos diferentes a los regulares.
+    // Para mayor informacion vease el siguiente link donde explican en ingles lo que aqui se ha expuesto:
+    // http://www.mathopenref.com/polygonconcave.html
     private void jbDibujarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbDibujarActionPerformed
         // En primer lugar, se revisa que el usuario si haya escrito cuantos vertices tendra el poligono sino entonces se termina la rutina
         if (jtNumVectores.getText().isEmpty())
@@ -344,7 +372,7 @@ public class VentanaPrincipal extends JFrame
             return;
         }
         
-        // Limpio la lista y el indice seleccionado de la lista
+        // Despues, limpio la lista y el indice seleccionado de la lista por si de pronto ya existia algun poligono previo
         listaFormas.clear();
         listaFormasImpresa.clear();
         jlFormas.setModel(listaFormasImpresa);
@@ -352,7 +380,7 @@ public class VentanaPrincipal extends JFrame
         indiceSeleccionado = -1;
         
         // Si pasa aqui entonces se recupera el numero de vertices que tendra el poligono y se multiplica por 2
-        float numVertices = Float.parseFloat(jtNumVectores.getText()); 
+        float numVertices = Float.parseFloat(jtNumVectores.getText())*2; 
         
         // Se calcula el radio que tendra el poligono en base al ancho del area de dibujo [Donde el ancho y el alto de tal area deben ser iguales]
         int radioPoligono = jlAreaDibujo.getWidth()/2 - 30;
@@ -386,15 +414,16 @@ public class VentanaPrincipal extends JFrame
         jlAreaDibujo.setIcon(imagenPoligono);
     }//GEN-LAST:event_jbDibujarActionPerformed
 
-    // Evento para realizar el analisis de los segmentos que no se intersectan
+    // Evento para realizar el analisis de formas posibles de hacer segmentos que no se intersectan
     private void jbAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAnalizarActionPerformed
-        // Si no hay vertices almacenados entonces se retorna de inmediato
-        if (XVertices.isEmpty())
+        // Primero se revisa que existan vertices almacenados o que no se haya hecho el analisis del mismo poligono
+        if (XVertices.isEmpty() || !listaFormas.isEmpty())
         {
+            // De lo contrario se retorna de inmediato
             return;
         }
         
-        // Si los hay entonces se crea una lista vacia para todos los vertices que vamos a analizar y se guarda cuantos son
+        // Si hay vertices y todavia no se han analizado estos, entonces se crea una lista vacia para todos los vertices que vamos a analizar y se guarda cuantos son
         List<String> vertices = new ArrayList();
         int numVertices = XVertices.size();
         
@@ -407,52 +436,59 @@ public class VentanaPrincipal extends JFrame
         // Y se procede a hacer la combinacion de vertices sin repeticion, cuyo resultado son los segmentos validos
         combinarVectores(vertices);
         
-        // Despues, se imprime por consola dichos segmentos solo a forma de debugging y se crea tambien una lista de segmentos, la cual esta ultima se llenara con el numero del segmento en si
-        System.out.println("Segmentos individuales Validos: ");
-        List aux1;
+        // Despues, de forma similar se crea otra lista pero esta vez de segmentos la cual se llenara con el numero del segmento en si
         List<String> segmentos = new ArrayList();
         for (int i = 0; i < listaSegmentos.size(); i++)
         {
-            aux1 = listaSegmentos.get(i);
-            System.out.println("Arista " + (i+1) + ": " + aux1.get(0).toString() + " con " + aux1.get(1).toString());
             segmentos.add(Integer.toString(i));
         }
         
-        // De igual forma que como se hizo con los vertices, tambien se hace una combinatoria de segmentos pero esta vez se consideran 1, 2, ... hasta n-3 posiciones en la combinatoria
+        // Similarmente a como se hizo con los vertices, tambien se hace una combinatoria de segmentos pero esta vez se consideran 1, 2, ... hasta (n)-1 posiciones en la combinatoria. Donde n es la mitad de los vertices o el numero ingresado por el usuario
         listaFormas.clear();
-        for(int i = 1; i <= numVertices-3; i++)
+        for(int i = 1; i <= (numVertices/2)-1; i++)
         {
             combinarSegmentos(segmentos, i);
         }
         
-        System.out.println("---");
+        // Aunque el metodo anterior realiza la combinatoria de todos los segmentos dentro del poligono que no se intersectan
+        // Se debe proceder a filtrar aquellas formas que pueden estar contenidas en otras. Esto se hace para remover aquellas
+        // soluciones en que la todavia es posible formar pares de vertices (o segmentos) y que como tal tampoco son soluciones
+        // validas para el ejercio. Para hacer esto se procede a:
+        
+        // Se toma la solucion de la posicion i, donde i comenzara como ultima forma encontrada y se movera hasta la primera
         loopForma:for(int i = listaFormas.size()-1; i >= 0; i--)
         {
+            // Luego, se toman todas las soluciones anteriores a i y se hace:
             for (int j = i - 1; j >= 0; j--)
             {
-                int dif = Math.abs(listaFormas.get(i).size() - listaFormas.get(j).size());
-                if ((dif == 0) || (dif > 2))
-                {
-                    continue;
-                }
+                // Si dicha solucion tiene el mismo numero de segmentos o el numero de elemetos entre cada solucion es mayor a 2 entonces
+                //int dif = Math.abs(listaFormas.get(i).size() - listaFormas.get(j).size());
+                //if ((dif == 0) || (dif > 2))
+                //{
+                //    // Se pasa al siguiente elemento j. Esto se hace para reducir el numero de comparaciones innecesarias.
+                //    continue;
+                //}
                 
-                List temp = new ArrayList<Integer>(listaFormas.get(i));
-                
+                // Una copia de la solucion i, la cual se comparara con la solucion j de modo que
+                List temp = new ArrayList<>(listaFormas.get(i));
                 temp.retainAll(listaFormas.get(j));
                 
-                System.out.println(listaFormas.get(j).toString());
-                System.out.println(listaFormas.get(i).toString());
-                System.out.println(temp.toString());
-                System.out.println("----");
-                
+                // Si el numero de elementos de la intersecccion i-j es igual al numero de elementos de la solucion j es porque
                 if (temp.size() == listaFormas.get(j).size())
                 {
+                    // j esta totalmente contenida en i y no es una solucion unica, por lo cual se remueve de la lista
+                    // Y se salta a la siguiente iteracion donde se seguira con la solucion i ya que esta disminuyo en 
+                    // una posicion por haber eliminado una solucion anterior
                     listaFormas.remove(j);
                     continue loopForma;
                 }
             }
         }
         
+        // Una vez que se termina el ciclo anterior, ya solo debemos poseer las soluciones validas,
+        // Por lo que se procedera a crear un lista imprimible de dichas soluciones para mostrararlas
+        // en pantalla a traves del Jlist que hay destinado para ello. 
+        List aux1;
         for (int i = 0; i < listaFormas.size(); i++)
         {
             aux1 = listaFormas.get(i);
@@ -467,6 +503,7 @@ public class VentanaPrincipal extends JFrame
             listaFormasImpresa.addElement(temp);
         }
         
+        // Una vez se tiene la lista de etiquetas de formas estas se desplieguan/muestran en pantalla
         jlFormas.setModel(listaFormasImpresa);
     }//GEN-LAST:event_jbAnalizarActionPerformed
 
@@ -496,43 +533,45 @@ public class VentanaPrincipal extends JFrame
     // Evento para determinar cual solucion se quiere dibujar
     private void jlFormasValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jlFormasValueChanged
         // Esto previene que el evento se dispare 2 veces
-        // Para saber porque este evento se dispara 2 veces vea: https://stackoverflow.com/questions/12461627/jlist-fires-valuechanged-twice-when-a-value-is-changed-via-mouse
+        // Para saber porque este evento se dispara 2 veces, vease el link: https://stackoverflow.com/questions/12461627/jlist-fires-valuechanged-twice-when-a-value-is-changed-via-mouse
         if (evt.getValueIsAdjusting()) {
             return;
         }
 
-        // Si no hay formas almacenados entonces se retorna de inmediato
+        // Luego, Si no hay formas almacenados entonces se retorna de inmediato
         if (listaSegmentos.isEmpty())
         {
             return;
         }
         
-        // Si las hay entonces, primero obtengo el indice seleccionado
+        // Ahora, Si las hay entonces primero obtengo el indice seleccionado
         indiceSeleccionado = jlFormas.getSelectedIndex();
         
-        // Luego, Si la lista de formas tiene por lo menos una y el indice elegido es una de ellas entonces
+        // Si la lista de formas tiene por lo menos una y el indice elegido es una de ellas entonces
         if (indiceSeleccionado != -1)
         {
             // Limpio y vuelvo a dibujar el poligono
             dibujo.limpiar();
             dibujo.dibujarPoligono(XVertices, YVertices, jlAreaDibujo.getWidth()/2, jlAreaDibujo.getWidth()/2, true);
             
-            // Posteriormente, dibujo la forma o solucion dentro del poligono
-            List aux1 = listaFormas.get(indiceSeleccionado);
+            // Posteriormente, dibujo la forma o solucion dentro del poligono. Para hacer eso:
+            List aux1 = listaFormas.get(indiceSeleccionado); // 1ero - Obtengo la lista especifica de segmentos que conforman dicha solucion
             
-            for (int i = 0; i < aux1.size(); i++)
+            for (int i = 0; i < aux1.size(); i++) // 2do - Mientras haya segementos por recorrer haga
             {
-                List aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(i).toString()));
+                List aux2 = listaSegmentos.get(Integer.parseInt(aux1.get(i).toString())); // 3ero - Obtengo los vertices que conforman el segmento que estoy leyendo
                 
+                // 4to - Recupera las coordenadas de dichos vertices
                 int x1 = (int) XVertices.get(Integer.parseInt(aux2.get(0).toString()));
                 int y1 = (int) YVertices.get(Integer.parseInt(aux2.get(0).toString()));
                 int x2 = (int) XVertices.get(Integer.parseInt(aux2.get(1).toString()));
                 int y2 = (int) YVertices.get(Integer.parseInt(aux2.get(1).toString()));
-
+                
+                // y 5to - Dibujo la arista o segmento en cuestion
                 dibujo.dibujarArista(x1, y1, x2, y2, Color.darkGray);
             }
             
-            // Y finalmente, se muestra en pantalla el dibujo del poligono con la solucion dentro
+            // Una vez se dibujan todos los segmentos de la solucion, se muestra en pantalla el dibujo del poligono con la solucion dentro
             Icon imagenFormaElegida = dibujo.retornarLienzo();
             jlAreaDibujo.setIcon(imagenFormaElegida);
         }

@@ -12,7 +12,7 @@ package Tarea1;
 // http://recursosformacion.com/wordpress/2013/05/java-para-programadores-5-3los-metodos-graphics-y-paint/
 // 
 // El mejor articulo porque aunque esta en ingles me dio la idea fundamental de como usar canvas o crear imagenes en memoria para luego retornarlas como iconos:
-// Dynamic Graphics Object Painting [Este articulo me yudo muchisimo]
+// Dynamic Graphics Object Painting [Este articulo me ayudo muchisimo]
 // Link: http://stackoverflow.com/questions/10628492/dynamic-graphics-object-painting/10628553#10628553
 //
 // paintComponent() vs paint() and JPanel vs Canvas in a paintbrush-type GUI [Otro enlace interesante que compara metodos de graficación]
@@ -76,7 +76,7 @@ public class Graficador
         // y 3ero - Un tamaño de letra en pixeles
         Font fuenteEtiqueta = new Font("SansSerif", 1, 16);
         
-        AreaDibujo.setFont(fuenteEtiqueta); // Ahora, establezco  esa fuente como el estilo con el que escribire la etiqueta
+        AreaDibujo.setFont(fuenteEtiqueta); // Ahora, establezco esa fuente como el estilo con el que escribire la etiqueta
         AreaDibujo.setColor(colorEtiqueta); // Despues, establezco el color de la etiqueta con el color que entro por los parametros
         AreaDibujo.drawString(etiqueta, coordenadaX, coordenadaY); // Y finalmente dibujo la etiqueta con la fuente y color asignados en la posicion de los parametros
         
@@ -200,10 +200,12 @@ public class Graficador
     // Metodo para revisar si dos segmentos de linea se intersectan
     public boolean revisarInterseccion(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
     {
+        // Como tal se retorna verdadero si en verdad las lineas se intersectan, de lo contrario se retrona falso
         return Line2D.linesIntersect(x1,y1,x2,y2,x3,y3,x4,y4);
     }
     
-    public Icon retornarLienzo() // METODO TEMPORAL para hacer pruebas [Creo que a la final no lo incluire]
+    // Metodo para obtener una instantanea (foro) del area de dibujo y la cual se retorna como un icono.
+    public Icon retornarLienzo()
     {
         Icon temp = new ImageIcon(superficie);
         return temp;

@@ -1,5 +1,8 @@
 package Tarea1;
 
+// Clase que fue tomada de:
+// https://nemthys.wordpress.com/2011/08/24/combinatoria-sin-repetir-java/
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
