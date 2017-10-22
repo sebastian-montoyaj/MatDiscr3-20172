@@ -26,7 +26,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import javax.swing.Icon;
@@ -74,7 +73,7 @@ public class Graficador
         // 1ero - Un tipo de letra especifico. Aqui particularmente usare SansSerif, aunque se puede usar Arial u otra
         // 2do - Un estilo de escritura. Donde 0 = Sencilla, 1 = Negrilla ó 2 = Italica
         // y 3ero - Un tamaño de letra en pixeles
-        Font fuenteEtiqueta = new Font("SansSerif", 1, 16);
+        Font fuenteEtiqueta = new Font("SansSerif", 1, 10);
         
         AreaDibujo.setFont(fuenteEtiqueta); // Ahora, establezco esa fuente como el estilo con el que escribire la etiqueta
         AreaDibujo.setColor(colorEtiqueta); // Despues, establezco el color de la etiqueta con el color que entro por los parametros
@@ -215,32 +214,40 @@ public class Graficador
         AreaDibujo.dispose();
     }
     
-    //
-    public Icon dibujarGrafo(ArrayList coordenadasX, ArrayList coordenadasY)
+    // Metodo para dibujar un grafo dados las coordenadas de cada uno de sus vertices
+    public Icon dibujarGrafo(ArrayList coordenadasX, ArrayList coordenadasY, boolean etiquetarVertices)
     {
+        // Primero, se limpia y se crea una variable grafica para tener control del area de dibujo
         limpiar();
         Graphics2D AreaDibujo = (Graphics2D) superficie.getGraphics();
         
+        // Luego, creo algunas variables para la iteracion y dibujado de los vertices
         int numElementos = coordenadasX.size();
         int tempX, tempY;
         
         // Ahora, por cada par de coordenadas se hace:
         for (int i = 0; i < numElementos; i++)
         {
-            tempX = (int) coordenadasX.get(i);
-            tempY = (int) coordenadasY.get(i);
+            tempX = (int) coordenadasX.get(i); // Se obtiene la coordenada X del vertice i
+            tempY = (int) coordenadasY.get(i); // Se obtiene la coordenada Y del vertice i
+            
+            // Y se dibuja el vertice en las coordenadas dadas
             dibujarVertice(tempX,tempY);
+            
+            // De manera opcional, si el parametro etiquetarVertices es verdadero entonces
+            if (etiquetarVertices)
+            {
+                dibujarEtiqueta(Integer.toString(i), tempX+5, tempY+15, Color.gray);
+            }
         }
         
-        // Una vez termino de hacer lo que necesitaba con este metodo, cierro la comunicacion
+        // Una vez termino de hacer lo que necesitaba con este metodo, cierro la comunicacion con el area de dibujo en memoria
         AreaDibujo.dispose();
         
         // Y retorno la imagen del grafo como si fuera un icono
         Icon graficaPoligono = new ImageIcon(superficie);
         return graficaPoligono; 
     }
-    
-    
     
     // Metodo para obtener una instantanea (foro) del area de dibujo y la cual se retorna como un icono.
     public Icon retornarLienzo()

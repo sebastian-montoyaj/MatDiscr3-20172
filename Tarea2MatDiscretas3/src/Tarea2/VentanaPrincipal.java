@@ -5,7 +5,9 @@ import Imagenes.PanelPrincipal;
 import java.awt.Color;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
+
 
 // Ventana principal que interactua con el usuario
 public class VentanaPrincipal extends JFrame
@@ -18,6 +20,8 @@ public class VentanaPrincipal extends JFrame
     ArrayList YVertices = new ArrayList();
     
     
+    AnalizadorHamiltoniano analizadorCiclos;
+    List<int[]> ciclosHamiltonianos = new ArrayList();
     
     // Constructor de la clase o ventana. Su proposito no va mas de lo estetico o para inicializacion de variables
     public VentanaPrincipal()
@@ -48,9 +52,16 @@ public class VentanaPrincipal extends JFrame
         construirGrafo();
     }
     
+    public void limpiarEstadoAnalisis()
+    {
+        ciclosHamiltonianos.clear();
+        jtfTotalCircuitos.setText("");
+        jtfCircuitoADibujar.setText("");
+    }
+    
     // Metodo para calcular y dibujar la malla de vertices formada por la operacion entre grupos Zm🕀Zn
     public void construirGrafo()
-    {       
+    {
         // En primer lugar, obtengo las dimensiones del area de dibujo para saber como puedo distribuir los vertices
         int ancho = jlAreaDibujo.getWidth();
         int alto = jlAreaDibujo.getHeight();
@@ -60,8 +71,8 @@ public class VentanaPrincipal extends JFrame
         int zn = (int) jsZ2.getValue();
         
         // Luego, realizo un calculo de cuanto espacio debo dejar a lo horizontal y a lo vertical entre cada vertice
-        int distanciaEjeHorizontal = ancho/(zm + 1);
-        int distanciaEjeVertical = alto/(zn + 1);
+        int distanciaEjeHorizontal = ancho/(zn + 1);
+        int distanciaEjeVertical = alto/(zm + 1);
         
         // Antes de computar las coordenadas exactas de cada vertice se reinician los vectores de coordenadas para que no se acumulen datos viejos con nuevos
         XVertices.clear();
@@ -71,20 +82,43 @@ public class VentanaPrincipal extends JFrame
         int coordenadaX, coordenadaY;
         for (int i = 0; i < zm; i++)
         {
-            coordenadaX = distanciaEjeHorizontal*(i+1);
+            coordenadaY = distanciaEjeVertical*(i+1);
             for (int j = 0; j < zn; j++)
             {
-                coordenadaY = distanciaEjeVertical*(j+1);
+                coordenadaX = distanciaEjeHorizontal*(j+1);
                 XVertices.add(coordenadaX);
                 YVertices.add(coordenadaY);
             }
         }
         
-        // Al terminar simplemente se invoca el metodo de dibujado de grafos y se establece dicha imagen en el area de dibujo
-        Icon imagenGrafo = dibujo.dibujarGrafo(XVertices, YVertices);
+        // Para terminar simplemente se hace lo siguiente:
+        
+        // Se invoca el metodo de dibujado de grafos y se establece dicha imagen en el area de dibujo
+        Icon imagenGrafo = dibujo.dibujarGrafo(XVertices, YVertices, true);
         jlAreaDibujo.setIcon(imagenGrafo);
+        
+        // Se crea la representacion matricial (matriz de adyacencia) del grafo
+        // NOTA1: Recuerde!!! Esta matriz es cuadrada porque la idea es describir como es la conexion de todos los vertices contra todos los vertices
+        // NOTA2: Un 0 representa: NO ARISTA y 1 representa: ARISTA
+        int[][] grafo = new int[zm*zn][zm*zn];
+        for (int i=0; i < grafo.length; i++)
+        {
+            for (int j=0; j < grafo[0].length; j++)
+            {
+                if (j!=i)
+                {
+                    grafo[i][j] = 1;
+                }
+                else
+                {
+                    grafo[i][j] = 0;
+                }
+            }
+        }
+        
+        // Y se crea un objeto analizador de grafos
+        analizadorCiclos = new AnalizadorHamiltoniano(grafo);
     }
-    
     
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -295,26 +329,89 @@ public class VentanaPrincipal extends JFrame
     // Si cambia el valor de Zm entonces se redibuja el grafo
     private void jsZ1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jsZ1StateChanged
         construirGrafo();
+        limpiarEstadoAnalisis();
     }//GEN-LAST:event_jsZ1StateChanged
 
     // De igual modo, si cambia el valor de Zn vuelve y se redibuja el grafo
     private void jsZ2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jsZ2StateChanged
         construirGrafo();
+        limpiarEstadoAnalisis();
     }//GEN-LAST:event_jsZ2StateChanged
 
     // 
     private void jtbAnalizarItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jtbAnalizarItemStateChanged
+        analizadorCiclos.comenzarAnalisis();
         
+        jtfTotalCircuitos.setText(Integer.toString(analizadorCiclos.obtenerNumeroCiclosHEncontrados()));
+        ciclosHamiltonianos = analizadorCiclos.obtenerListaCiclosHEncontrados();
     }//GEN-LAST:event_jtbAnalizarItemStateChanged
 
-    // 
+    // Evento para controlar que el usuario si escriba un numero entero positivo
     private void jtfCircuitoADibujarKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfCircuitoADibujarKeyTyped
+        char caracter = evt.getKeyChar(); // En primer lugar, se obtiene el caracter que escribio el usuario
         
+        // Si ese caracter no es un digito entonces
+        if (Character.isDigit(caracter) != true)
+        {
+            evt.consume(); // Se consume el evento para que no se ponga tal caracter en la caja de texto
+        }
+        
+        // Si no entro al condicional anterior es porque el caracter efectivamente si es un numero,
+        // pero como primer digito se escribira el CERO entonces
+        if (jtfCircuitoADibujar.getText().isEmpty() && Character.getNumericValue(caracter) == 0)
+        {
+            evt.consume(); // Se consume el evento porque se necesita un numero entre 1 y el maximo numero de circuitos posibles (Aunque esto ultimo se verificara en el boton de dibujo)
+        }
     }//GEN-LAST:event_jtfCircuitoADibujarKeyTyped
 
     // 
     private void jtbDibujarCircuitoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jtbDibujarCircuitoItemStateChanged
-        
+        if (ciclosHamiltonianos.size() > 0)
+        {
+            int numMaxCiclos = ciclosHamiltonianos.size();
+            
+            try
+            {
+                int numCiclo = Integer.parseInt(jtfCircuitoADibujar.getText());
+                
+                if ((numCiclo < 1) || (numCiclo > numMaxCiclos))
+                {
+                    JOptionPane.showMessageDialog(this, "Ingrese un ciclo valido!", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                dibujo.dibujarGrafo(XVertices, YVertices, true);
+                
+                int[] tempCiclo = ciclosHamiltonianos.get(numCiclo-1);
+                
+                int aux, cIniX, cIniY, cFinX, cFinY;
+                for (int i=0; i < tempCiclo.length-1; i++)
+                {
+                    aux = tempCiclo[i];
+                    cIniX = (int) XVertices.get(aux);
+                    cIniY = (int) YVertices.get(aux);
+                    aux = tempCiclo[i+1];
+                    cFinX = (int) XVertices.get(aux);
+                    cFinY = (int) YVertices.get(aux);
+                    
+                    dibujo.dibujarArista(cIniX, cIniY, cFinX, cFinY, Color.blue);
+                }
+                aux = tempCiclo[tempCiclo.length-1];
+                cIniX = (int) XVertices.get(aux);
+                cIniY = (int) YVertices.get(aux);
+                aux = tempCiclo[0];
+                cFinX = (int) XVertices.get(aux);
+                cFinY = (int) YVertices.get(aux);
+                dibujo.dibujarArista(cIniX, cIniY, cFinX, cFinY, Color.blue);
+                
+                Icon instantaneaGrafo = dibujo.retornarLienzo();
+                jlAreaDibujo.setIcon(instantaneaGrafo);
+            }
+            catch (NumberFormatException e)
+            {
+                JOptionPane.showMessageDialog(this, "Por favor escriba un numero!", "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_jtbDibujarCircuitoItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
