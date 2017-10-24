@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 
-
 // Ventana principal que interactua con el usuario
 public class VentanaPrincipal extends JFrame
 {
@@ -19,16 +18,21 @@ public class VentanaPrincipal extends JFrame
     ArrayList XVertices = new ArrayList();
     ArrayList YVertices = new ArrayList();
     
-    
+    // Variable para realizar el analisis de los circuitos hamiltonianos
     AnalizadorHamiltoniano analizadorCiclos;
+    
+    // Variable para almacenar los circuitos encontrados
     List<int[]> ciclosHamiltonianos = new ArrayList();
+    
+    // Variable para guardar una etiqueta o representacion simbolica de los circuitos encontrados y que se mostraran en un Jlist
+    DefaultListModel<String> listaCiclosHImpresa = new  DefaultListModel();
     
     // Constructor de la clase o ventana. Su proposito no va mas de lo estetico o para inicializacion de variables
     public VentanaPrincipal()
     {
         initComponents();
         
-        // Se establece el icomo de la ventana
+        // Se establece el icono de la ventana
         Image icono = new ImageIcon(getClass().getResource("/Imagenes/icono.png")).getImage();
         setIconImage(icono);
         
@@ -48,15 +52,21 @@ public class VentanaPrincipal extends JFrame
         // How to limit JSpinner
         // https://stackoverflow.com/questions/15880844/how-to-limit-jspinner
         
+        // Se le indica tambien al mostrador de circuitos que haga ajuste linea de forma automatica
+        jtaCircuitoElegido.setLineWrap(true);
+        
         // Y se procede a dibujar de forma inicial el grafo minimo con el que puede trabajar este aplicativo
         construirGrafo();
     }
     
+    // Metodo para borrar o reiniciar los estados de los componentes de la ventana
     public void limpiarEstadoAnalisis()
     {
         ciclosHamiltonianos.clear();
+        listaCiclosHImpresa.clear();
+        jlListaCircuitos.setModel(listaCiclosHImpresa);
         jtfTotalCircuitos.setText("");
-        jtfCircuitoADibujar.setText("");
+        jtaCircuitoElegido.setText("");
     }
     
     // Metodo para calcular y dibujar la malla de vertices formada por la operacion entre grupos Zm🕀Zn
@@ -134,10 +144,12 @@ public class VentanaPrincipal extends JFrame
         jpResultado = new javax.swing.JPanel();
         jl4 = new javax.swing.JLabel();
         jl5 = new javax.swing.JLabel();
-        jl6 = new javax.swing.JLabel();
         jtfTotalCircuitos = new javax.swing.JTextField();
-        jtfCircuitoADibujar = new javax.swing.JTextField();
         jtbDibujarCircuito = new javax.swing.JToggleButton();
+        jspListaCircuitos = new javax.swing.JScrollPane();
+        jlListaCircuitos = new javax.swing.JList<>();
+        jspCircuitoElegido = new javax.swing.JScrollPane();
+        jtaCircuitoElegido = new javax.swing.JTextArea();
         jlAreaDibujo = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -172,7 +184,8 @@ public class VentanaPrincipal extends JFrame
         jtbAnalizar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/analizar01.png"))); // NOI18N
         jtbAnalizar.setBorderPainted(false);
         jtbAnalizar.setContentAreaFilled(false);
-        jtbAnalizar.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/analizar02.png"))); // NOI18N
+        jtbAnalizar.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/analizar02.png"))); // NOI18N
+        jtbAnalizar.setRolloverSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/analizar02.png"))); // NOI18N
         jtbAnalizar.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jtbAnalizarItemStateChanged(evt);
@@ -194,30 +207,31 @@ public class VentanaPrincipal extends JFrame
                         .addComponent(jl2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jsZ2)))
-                .addContainerGap())
-            .addGroup(jpOpcionesLayout.createSequentialGroup()
-                .addGap(136, 136, 136)
+                .addGap(15, 15, 15)
                 .addComponent(jtbAnalizar, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jl3)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jpOpcionesLayout.setVerticalGroup(
             jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jpOpcionesLayout.createSequentialGroup()
-                .addGap(11, 11, 11)
-                .addGroup(jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jl1)
-                    .addComponent(jsZ1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jl2)
-                    .addComponent(jsZ2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(jtbAnalizar, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jl3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addGroup(jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jpOpcionesLayout.createSequentialGroup()
+                        .addGap(11, 11, 11)
+                        .addGroup(jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jl1)
+                            .addComponent(jsZ1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jl2)
+                            .addComponent(jsZ2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jpOpcionesLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(jtbAnalizar, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jl3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jpResultado.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2), "Resultado", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Comic Sans MS", 1, 24))); // NOI18N
@@ -227,31 +241,31 @@ public class VentanaPrincipal extends JFrame
         jl4.setText("Posibles Circuitos Hamiltonianos:");
 
         jl5.setFont(new java.awt.Font("Comic Sans MS", 1, 20)); // NOI18N
-        jl5.setText("Ver Circuito:");
-
-        jl6.setFont(new java.awt.Font("Comic Sans MS", 1, 20)); // NOI18N
-        jl6.setText("Dibujar");
+        jl5.setText("Dibujar");
 
         jtfTotalCircuitos.setFont(new java.awt.Font("Comic Sans MS", 0, 18)); // NOI18N
         jtfTotalCircuitos.setDisabledTextColor(new java.awt.Color(0, 0, 0));
         jtfTotalCircuitos.setEnabled(false);
 
-        jtfCircuitoADibujar.setFont(new java.awt.Font("Comic Sans MS", 0, 18)); // NOI18N
-        jtfCircuitoADibujar.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                jtfCircuitoADibujarKeyTyped(evt);
-            }
-        });
-
         jtbDibujarCircuito.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/dibujar01.png"))); // NOI18N
         jtbDibujarCircuito.setBorderPainted(false);
         jtbDibujarCircuito.setContentAreaFilled(false);
-        jtbDibujarCircuito.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/dibujar02.png"))); // NOI18N
+        jtbDibujarCircuito.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/dibujar02.png"))); // NOI18N
+        jtbDibujarCircuito.setRolloverSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/dibujar02.png"))); // NOI18N
         jtbDibujarCircuito.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jtbDibujarCircuitoItemStateChanged(evt);
             }
         });
+
+        jlListaCircuitos.setFont(new java.awt.Font("Comic Sans MS", 0, 16)); // NOI18N
+        jlListaCircuitos.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jspListaCircuitos.setViewportView(jlListaCircuitos);
+
+        jtaCircuitoElegido.setColumns(20);
+        jtaCircuitoElegido.setFont(new java.awt.Font("Comic Sans MS", 0, 16)); // NOI18N
+        jtaCircuitoElegido.setRows(5);
+        jspCircuitoElegido.setViewportView(jtaCircuitoElegido);
 
         javax.swing.GroupLayout jpResultadoLayout = new javax.swing.GroupLayout(jpResultado);
         jpResultado.setLayout(jpResultadoLayout);
@@ -260,21 +274,16 @@ public class VentanaPrincipal extends JFrame
             .addGroup(jpResultadoLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jpResultadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jspCircuitoElegido)
                     .addComponent(jtfTotalCircuitos)
+                    .addComponent(jl4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jpResultadoLayout.createSequentialGroup()
-                        .addComponent(jl4)
-                        .addGap(0, 72, Short.MAX_VALUE))
-                    .addGroup(jpResultadoLayout.createSequentialGroup()
-                        .addComponent(jl5)
+                        .addComponent(jspListaCircuitos, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jtfCircuitoADibujar)))
+                        .addGroup(jpResultadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(jtbDibujarCircuito, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jl5))))
                 .addContainerGap())
-            .addGroup(jpResultadoLayout.createSequentialGroup()
-                .addGap(133, 133, 133)
-                .addComponent(jtbDibujarCircuito, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jl6)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jpResultadoLayout.setVerticalGroup(
             jpResultadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -282,15 +291,18 @@ public class VentanaPrincipal extends JFrame
                 .addComponent(jl4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jtfTotalCircuitos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jpResultadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jl5)
-                    .addComponent(jtfCircuitoADibujar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jpResultadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jpResultadoLayout.createSequentialGroup()
+                        .addGap(48, 48, 48)
+                        .addComponent(jl5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jtbDibujarCircuito, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jpResultadoLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jspListaCircuitos, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jpResultadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jtbDibujarCircuito, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jl6, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 14, Short.MAX_VALUE))
+                .addComponent(jspCircuitoElegido)
+                .addContainerGap())
         );
 
         jlAreaDibujo.setBackground(new java.awt.Color(255, 255, 255));
@@ -303,24 +315,24 @@ public class VentanaPrincipal extends JFrame
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jpOpciones, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jpResultado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
-                .addComponent(jlAreaDibujo, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jlAreaDibujo, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jlAreaDibujo, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jlAreaDibujo, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jpOpciones, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jpOpciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jpResultado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addGap(15, 15, 15))
+                .addContainerGap())
         );
 
         pack();
@@ -338,79 +350,105 @@ public class VentanaPrincipal extends JFrame
         limpiarEstadoAnalisis();
     }//GEN-LAST:event_jsZ2StateChanged
 
-    // 
+    // Evento para realizar la busqueda de los circuitos
     private void jtbAnalizarItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jtbAnalizarItemStateChanged
-        analizadorCiclos.comenzarAnalisis();
+        analizadorCiclos.comenzarAnalisis(); // En primer lugar se procede a invocar el metodo que analiza el grafo en busca de los circuitos
         
+        // Una vez termina el analisis se muestran en total cuantos fueron los ciclos encontrados
         jtfTotalCircuitos.setText(Integer.toString(analizadorCiclos.obtenerNumeroCiclosHEncontrados()));
+        
+        // Luego se procede a rellenar la lista visual de circuitos con etiquetas simples que representen cada uno de las soluciones
+        listaCiclosHImpresa.clear();
+        for(int i = 0; i < analizadorCiclos.obtenerNumeroCiclosHEncontrados(); i++)
+        {
+            listaCiclosHImpresa.addElement("Circuito " + (i+1));
+        }
+        jlListaCircuitos.setModel(listaCiclosHImpresa);
+        
+        // Y se recuperan las listas de soluciones para manejarlas dentro del programa
         ciclosHamiltonianos = analizadorCiclos.obtenerListaCiclosHEncontrados();
     }//GEN-LAST:event_jtbAnalizarItemStateChanged
 
-    // Evento para controlar que el usuario si escriba un numero entero positivo
-    private void jtfCircuitoADibujarKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfCircuitoADibujarKeyTyped
-        char caracter = evt.getKeyChar(); // En primer lugar, se obtiene el caracter que escribio el usuario
-        
-        // Si ese caracter no es un digito entonces
-        if (Character.isDigit(caracter) != true)
-        {
-            evt.consume(); // Se consume el evento para que no se ponga tal caracter en la caja de texto
-        }
-        
-        // Si no entro al condicional anterior es porque el caracter efectivamente si es un numero,
-        // pero como primer digito se escribira el CERO entonces
-        if (jtfCircuitoADibujar.getText().isEmpty() && Character.getNumericValue(caracter) == 0)
-        {
-            evt.consume(); // Se consume el evento porque se necesita un numero entre 1 y el maximo numero de circuitos posibles (Aunque esto ultimo se verificara en el boton de dibujo)
-        }
-    }//GEN-LAST:event_jtfCircuitoADibujarKeyTyped
-
-    // 
+    // Evento para dibujar en pantalla el circuito especifico que quiere ver el usuario
     private void jtbDibujarCircuitoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jtbDibujarCircuitoItemStateChanged
-        if (ciclosHamiltonianos.size() > 0)
+        // Primero se recupera el indice o circuito seleccionado por el usuario en la lista de etiquetas
+        int circuitoElegido = jlListaCircuitos.getSelectedIndex();
+        
+        // Si hay soluciones encontradas Y el usuario eleigio alguna de ellas entonces
+        if ((ciclosHamiltonianos.size() > 0) && (circuitoElegido > -1))
         {
-            int numMaxCiclos = ciclosHamiltonianos.size();
+            // Se dibuja nuevamente la malla de vertices
+            dibujo.dibujarGrafo(XVertices, YVertices, true);
             
-            try
+            // Ahora, se crea un hilo en el cual se desarrollara la logica para dibujar tramo por tramo el circuito elegido
+            // Esto es necesario porque si no aparto el siguiente segmento de codigo del evento de este boton, 
+            // cuando ejecute la instruccion Thread.sleep(2000); se bloqueara la interfaz del aplicativo y no dejara
+            // ver el dibujado tramo por tramo. Por tanto:
+            Thread hiloDibujo = new Thread()
             {
-                int numCiclo = Integer.parseInt(jtfCircuitoADibujar.getText());
-                
-                if ((numCiclo < 1) || (numCiclo > numMaxCiclos))
+                @Override
+                public void run()
                 {
-                    JOptionPane.showMessageDialog(this, "Ingrese un ciclo valido!", "ERROR", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                
-                dibujo.dibujarGrafo(XVertices, YVertices, true);
-                
-                int[] tempCiclo = ciclosHamiltonianos.get(numCiclo-1);
-                
-                int aux, cIniX, cIniY, cFinX, cFinY;
-                for (int i=0; i < tempCiclo.length-1; i++)
-                {
-                    aux = tempCiclo[i];
+                    // Recupero el recorrido especifico del circuito
+                    int[] tempCiclo = ciclosHamiltonianos.get(circuitoElegido);
+                    
+                    // Imprimo un encabezado de que circuito se mostrara en el campo de ruta
+                    jtaCircuitoElegido.setText("Circuito " + circuitoElegido + " :\n");
+                    
+                    // Luego, creo algunas variables para pasar por todos los vertices del circuito y recuperar sus coordenadas
+                    int aux, cIniX, cIniY, cFinX, cFinY;
+                    
+                    // Tambien, creo una variable para refrescar el lienzo de dibujo
+                    Icon instantaneaGrafo;
+                    
+                    // A continuacion se empezara a imprimir y dibujar el circuito por lo que:
+                    
+                    // 1ero - Se imprime cual es el vertice origen
+                    jtaCircuitoElegido.setText(jtaCircuitoElegido.getText() + Integer.toString(tempCiclo[0]) + "->");
+                    
+                    // 2do - Mientras haya n-1 vertices por recorrer HAGA:
+                    for (int i=0; i < tempCiclo.length-1; i++)
+                    {
+                        // Recupero las coordenadas del vertice i
+                        aux = tempCiclo[i];
+                        cIniX = (int) XVertices.get(aux);
+                        cIniY = (int) YVertices.get(aux);
+                        
+                        // Recupero las coordenadas del vertice i+1
+                        aux = tempCiclo[i+1];
+                        cFinX = (int) XVertices.get(aux);
+                        cFinY = (int) YVertices.get(aux);
+                        
+                        // Imprimo, el vertice i+1 o que es punta del trazado que se esta haciendo
+                        jtaCircuitoElegido.setText(jtaCircuitoElegido.getText() + Integer.toString(aux) + "->");
+                        
+                        // De igual modo, dibujo una flecha entre los vertices i e i+1 y refresco al area de dibujo
+                        dibujo.dibujarFlecha(cIniX, cIniY, cFinX, cFinY, Color.blue, false);
+                        instantaneaGrafo = dibujo.retornarLienzo();
+                        jlAreaDibujo.setIcon(instantaneaGrafo);
+                        
+                        // Y antes de pasar a la siguiente iteracion espero 2 segundos
+                        try {Thread.sleep(2000);} catch (InterruptedException ex) {}
+                    }
+                    
+                    // 3ero - Una vez sale del ciclo anterior, recupero las coordenadas del ultimo y primer vertice
+                    aux = tempCiclo[tempCiclo.length-1];
                     cIniX = (int) XVertices.get(aux);
                     cIniY = (int) YVertices.get(aux);
-                    aux = tempCiclo[i+1];
+                    aux = tempCiclo[0];
                     cFinX = (int) XVertices.get(aux);
                     cFinY = (int) YVertices.get(aux);
                     
-                    dibujo.dibujarArista(cIniX, cIniY, cFinX, cFinY, Color.blue);
+                    // 4to - Imprimo y dibujo el ultimo tramo del circuito
+                    jtaCircuitoElegido.setText(jtaCircuitoElegido.getText() + Integer.toString(aux));
+                    dibujo.dibujarFlecha(cIniX, cIniY, cFinX, cFinY, Color.blue, false);
+                    instantaneaGrafo = dibujo.retornarLienzo();
+                    jlAreaDibujo.setIcon(instantaneaGrafo);
                 }
-                aux = tempCiclo[tempCiclo.length-1];
-                cIniX = (int) XVertices.get(aux);
-                cIniY = (int) YVertices.get(aux);
-                aux = tempCiclo[0];
-                cFinX = (int) XVertices.get(aux);
-                cFinY = (int) YVertices.get(aux);
-                dibujo.dibujarArista(cIniX, cIniY, cFinX, cFinY, Color.blue);
-                
-                Icon instantaneaGrafo = dibujo.retornarLienzo();
-                jlAreaDibujo.setIcon(instantaneaGrafo);
-            }
-            catch (NumberFormatException e)
-            {
-                JOptionPane.showMessageDialog(this, "Por favor escriba un numero!", "ERROR", JOptionPane.ERROR_MESSAGE);
-            }
+            };
+            
+            // Finalmente, ponemos en marcha le proceso de dibujado del circuito
+            hiloDibujo.start();
         }
     }//GEN-LAST:event_jtbDibujarCircuitoItemStateChanged
 
@@ -420,15 +458,17 @@ public class VentanaPrincipal extends JFrame
     private javax.swing.JLabel jl3;
     private javax.swing.JLabel jl4;
     private javax.swing.JLabel jl5;
-    private javax.swing.JLabel jl6;
     private javax.swing.JLabel jlAreaDibujo;
+    private javax.swing.JList<String> jlListaCircuitos;
     private javax.swing.JPanel jpOpciones;
     private javax.swing.JPanel jpResultado;
     private javax.swing.JSpinner jsZ1;
     private javax.swing.JSpinner jsZ2;
+    private javax.swing.JScrollPane jspCircuitoElegido;
+    private javax.swing.JScrollPane jspListaCircuitos;
+    private javax.swing.JTextArea jtaCircuitoElegido;
     private javax.swing.JToggleButton jtbAnalizar;
     private javax.swing.JToggleButton jtbDibujarCircuito;
-    private javax.swing.JTextField jtfCircuitoADibujar;
     private javax.swing.JTextField jtfTotalCircuitos;
     // End of variables declaration//GEN-END:variables
 }

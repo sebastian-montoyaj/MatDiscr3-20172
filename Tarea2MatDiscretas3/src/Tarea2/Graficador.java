@@ -36,8 +36,8 @@ public class Graficador
 {
     // ----- Variables -----
     private BufferedImage superficie; // Variable que contendra el area de dibujo en la memoria del computador y que nos permitira realizar dibujos off-sreen (o sea primero en memoria y luego expuestos en alguna interfaz)
-    private int anchoSuperficie = 500; // Variable que guarda el ancho de la superficie de dibujo
-    private int altoSuperficie = 450; // Variable que guarda el alto de la superficie de dibujo
+    private int anchoSuperficie = 600; // Variable que guarda el ancho de la superficie de dibujo
+    private int altoSuperficie = 600; // Variable que guarda el alto de la superficie de dibujo
     
     // Constructor que inicializa el area de dibujo(lienzo) sobre sobre el cual se dibujara
     public Graficador()
@@ -131,6 +131,75 @@ public class Graficador
         
         // Una vez termino de hacer lo que necesitaba con este metodo, cierro la comunicacion
         AreaDibujo.dispose();
+    }
+    
+    // Este metodo es una derivacion del anterior pues la idea de este metodo es dibujar una flecha donde
+    // la cola de la misma sera en la primeras coordenadas indicadas en los paramnetros y la cabeza en los
+    // siguientes dos. Además se le puede indicar de que color se quiere la flecha y si la punta de la flecha
+    // sea rellena (---►) o no (--->).
+    public void dibujarFlecha(int xInicio, int yInicio, int xFin, int yFin, Color colorFlecha, boolean rellena)
+    {
+        Graphics2D AreaDibujo = (Graphics2D) superficie.getGraphics(); // Primero tomo control del area de dibujo con una variable graphics
+        AreaDibujo.setStroke(new BasicStroke(2.5f)); // Luego establezco un pincel con un grosor adecuado para dibujar la flecha
+        // Y creo varias varibles que necesitare para calcular angulos y coordenadas de la punta de flecha.
+        double ang,angSep,deltax,deltay;
+        int distancia, p1x,p1y,p2x,p2y;
+        
+        // Entonces, la idea de dibujar una flecha, no es más que dibujar una linea
+        // y en la terminacion de la linea dibujar otras dos lineas a lado y lado.
+        // Sinceramente, para la creacion de este metodo me base de:
+        // http://mexiconotas2.blogspot.com/2010/08/tutorial-como-dibujar-una-flecha.html
+        
+        // Como se puede ver las lineas finales (punta) se hacen calculando coordenas adecuadas que me
+        // permitan dibujar dos lineas que comienzan en el final de la flecha hasta dos parejas (x,y)
+        // pertinentes, por lo que:
+        
+        AreaDibujo.setColor(colorFlecha); // De inmediato asigno el color con el que se dibujara la flecha
+        
+        // Luego, las siguientes dos instrucciones son para determinar el diferencial de distancia de la linea 
+        // en el eje x y el diferencial de distancia de la misma linea en y
+        deltax = xInicio - xFin;
+        deltay = -(yInicio - yFin);
+        
+        ang = Math.atan(deltay/deltax); // Una vez tenemos los diferenciales de la linea en ambos ejes, calculamos el angulo que hace la linea con respecto a la horizontal
+            
+        if (deltax < 0) // Si el diferecial de la linea en x es negativo entonces
+        {
+            ang = ang + Math.PI; // Le añadimos al angulo anterior 180 grados
+            // Esto no es más que para hacer ajustes en la posicion de la flecha
+            // y que no nos quede invertida la punta para cuando la flecha va de 
+            // izquierda a derecha
+        }
+            
+        angSep = 30.0; // Luego asignamos la separacion o anchura de la punta
+        distancia = 15; // como tambien el largo de la punta
+        
+        // Las siguientes 4 instrucciones son para conocer esas parejas (x,y) que darian la forma
+        // de la punta, en si no voy a entrar en mucho detalle pero en pocas palabras no es más que
+        // descomponer vectorialmente tringulos para obtener dichas coordenadas.
+        p1x = (int) (xFin + (distancia*Math.cos(ang - Math.toRadians(angSep))) );
+        p1y = (int) (yFin - (distancia*Math.sin(ang - Math.toRadians(angSep))) );
+        p2x = (int) (xFin + (distancia*Math.cos(ang + Math.toRadians(angSep))) );
+        p2y = (int) (yFin - (distancia*Math.sin(ang + Math.toRadians(angSep))) );
+        
+        dibujarArista(xInicio, yInicio, xFin, yFin, colorFlecha); // Una vez conocidas las coordenadas de control para la punta de flecha, dibujamos como tal la linea propia de la flecha
+        
+        if (rellena) // Por ultimo, si se indico en los parametros que la punta fuera rellena entonces
+        {
+            int[] puntosXFlecha = {xFin,p1x,p2x}; // Creo una tripleta de posiciones en x 
+            int[] puntosYFlecha = {yFin,p1y,p2y}; // Creo una tripleta de posiciones en y
+            AreaDibujo.fillPolygon(puntosXFlecha, puntosYFlecha, 3);  // Y creo un tringulo con las coordenadas especificadas y que seguramente formara la punta de flecha donde le corresponde.
+            // El 3 es para indicar que se dibujara un poligono (figura) de 3 lados, si le pongo 5 o 2
+            // me saca un error porque el metodo tratara de dibujar una figura de esos lados con tan
+            // solo las tres parejas de coordenadas que le estoy indicando.
+        }
+        else // Sino, simplmente
+        {
+            AreaDibujo.drawLine(p1x, p1y, xFin, yFin); // Se dibuja una primera linea de punta
+            AreaDibujo.drawLine(p2x, p2y, xFin, yFin); // y luego se dibuja la otra parte de linea de punta
+        }
+        
+        AreaDibujo.dispose(); // De igual modo que los otros metodos, liberamos nuestro control del espacio de trabajo
     }
     
     // Este metodo tiene la tarea de dibujar una arista no recta entre dos vertices dados (O sea dibujar como una especie de "[")
