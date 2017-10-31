@@ -13,5 +13,10 @@ Tarea 2
 + Andrés Mauricio Álvarez Ortiz ~ amauricio.alvarez@udea.edu.co
 + Sebastián Montoya Jiménez ~ sebastian.montoyaj@udea.edu.co
 
+Tarea 3
++ Jeniffer Acosta Orrego ~ jeniffer.acosta@udea.edu.co
++ Julio César Buitrago Yépez ~ julio.buitrago@udea.edu.co
++ Sebastián Montoya Jiménez ~ sebastian.montoyaj@udea.edu.co
+
 ***
 ###### GitHub tiene [emojis!](https://www.webpagefx.com/tools/emoji-cheat-sheet/) :sparkles: :camel: :boom:
