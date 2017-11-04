@@ -15,7 +15,7 @@ public class PanelPrincipal extends JPanel
     public PanelPrincipal()
     {
         // Se establece el tamaño del fondo
-        this.setSize(1200, 632);
+        this.setSize(1425, 570);
     }
     
     @Override
