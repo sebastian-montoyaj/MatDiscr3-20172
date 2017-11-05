@@ -90,7 +90,7 @@ public class VentanaBienvenida extends JFrame implements Runnable
             VentanaPrincipal ventanaPrimaria = new VentanaPrincipal(); // Se crea una instancia de la ventana principal
             ventanaPrimaria.setVisible(true); // Y por ultimo se muestra ya la ventana que interctua con el usuario
         }
-        catch (InterruptedException error)
+        catch (Exception error)
         {
             System.out.println("Problema: " + error); // En caso de algun error se imprime tal error por consola
         }

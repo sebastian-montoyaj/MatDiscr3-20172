@@ -34,8 +34,8 @@ public class Graficador
 {
     // ----- Variables -----
     private BufferedImage superficie; // Variable que contendra el area de dibujo en la memoria del computador y que nos permitira realizar dibujos off-sreen (o sea primero en memoria y luego expuestos en alguna interfaz)
-    private int anchoSuperficie = 500; // Variable que guarda el ancho de la superficie de dibujo
-    private int altoSuperficie = 500; // Variable que guarda el alto de la superficie de dibujo
+    private int anchoSuperficie = 788; // Variable que guarda el ancho de la superficie de dibujo
+    private int altoSuperficie = 788; // Variable que guarda el alto de la superficie de dibujo
     
     // Constructor que inicializa el area de dibujo(lienzo) sobre sobre el cual se dibujara
     public Graficador()

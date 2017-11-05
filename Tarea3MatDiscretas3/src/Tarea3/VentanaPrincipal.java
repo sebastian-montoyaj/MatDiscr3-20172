@@ -3,55 +3,21 @@ package Tarea3;
 // Se importan los paquetes que necesita la clase
 import Imagenes.PanelPrincipal;
 import java.awt.Image;
-import java.util.Random;
 import javax.swing.*;
 
 // Ventana principal que interactua con el usuario
 public class VentanaPrincipal extends JFrame
 {
-    Graficador dibujoOp1 = new Graficador();
-    Graficador dibujoOp2 = new Graficador();
+    Graficador dibujo = new Graficador();
     
-    int[][] matrizOp1;
-    int[][] matrizOp2;
+    int[][] matrizOp;
     float[] colores;
     
-    private void construirGrupo()
-    {
-        int tamGrupo = (int) Math.pow(2, (int)jsExponente.getValue());
-        matrizOp1 = new int[tamGrupo][tamGrupo];
-        matrizOp2 = new int[tamGrupo][tamGrupo];
-        colores = new float[tamGrupo];
-        
-        String elementosGrupo = "";
-        for (int i=0; i < tamGrupo; i++)
-        {
-            elementosGrupo = elementosGrupo + Integer.toBinaryString(i);
-            
-            if (i<tamGrupo-1)
-            {
-                elementosGrupo = elementosGrupo + "\n";
-            }
-            
-            colores[i] = ((320/tamGrupo)*i)/360.0f;
-        }
-        
-        // ----------- Esto es solo para hacer pruebas
-        Random rand = new Random();
-        for (int i=0; i < tamGrupo; i++)
-        {
-            for (int j=0; j < tamGrupo; j++)
-            {
-                matrizOp1[i][j] = rand.nextInt(tamGrupo);
-            }
-        }
-        // -----------
-        
-        jtaElementosGrupo.setText(elementosGrupo);
-    }
+    GF2N galoisField;
+    int[] pModulos;
     
     // Constructor de la clase o ventana. Su proposito no va mas de lo estetico o para inicializacion de variables
-    public VentanaPrincipal()
+    public VentanaPrincipal() throws Exception
     {
         initComponents();
         
@@ -73,8 +39,47 @@ public class VentanaPrincipal extends JFrame
         construirGrupo();
     }
     
+    private void construirGrupo() throws Exception
+    {
+        int tamGrupo = (int) Math.pow(2, (int)jsExponente.getValue());
+        matrizOp = new int[tamGrupo][tamGrupo];
+        colores = new float[tamGrupo];
+        
+        String elementosGrupo = "";
+        for (int i=0; i < tamGrupo; i++)
+        {
+            elementosGrupo = elementosGrupo + Integer.toBinaryString(i);
+            
+            if (i<tamGrupo-1)
+            {
+                elementosGrupo = elementosGrupo + "\n";
+            }
+            
+            colores[i] = ((320/tamGrupo)*i)/360.0f;
+        }
+        
+        galoisField = new GF2N(tamGrupo);
+        String[] pModulosEtiquetas = new String[tamGrupo];
+        pModulos = new int[tamGrupo];
+        int conta = 0;
+        
+        for (int i = tamGrupo; i < tamGrupo*2; i++)
+        {
+            pModulos[conta] = i;
+            pModulosEtiquetas[conta] = Integer.toBinaryString(i);
+            conta++;
+        }
+        
+        jcbPoliModulo.setModel(new DefaultComboBoxModel(pModulosEtiquetas));
+        jtaElementosGrupo.setText(elementosGrupo);
+    }
     
-    
+    public void limpiar()
+    {
+        jcbOperacion.setSelectedIndex(-1);
+        dibujo.limpiar();
+        jlAreaDibujo.setIcon(dibujo.retornarLienzo());
+    }
     
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -86,17 +91,15 @@ public class VentanaPrincipal extends JFrame
         jsExponente = new javax.swing.JSpinner();
         jspElementosGrupo = new javax.swing.JScrollPane();
         jtaElementosGrupo = new javax.swing.JTextArea();
-        jpOperaciones = new javax.swing.JPanel();
+        jpOpciones = new javax.swing.JPanel();
         jl3 = new javax.swing.JLabel();
-        jcbOperacion1 = new javax.swing.JComboBox<>();
+        jcbOperacion = new javax.swing.JComboBox<>();
         jl4 = new javax.swing.JLabel();
-        jcbOperacion2 = new javax.swing.JComboBox<>();
+        jcbPoliModulo = new javax.swing.JComboBox<>();
         jl6 = new javax.swing.JLabel();
         jl7 = new javax.swing.JLabel();
-        jl8 = new javax.swing.JLabel();
         jbDibujar = new javax.swing.JButton();
-        jlAreaDibujoOp1 = new javax.swing.JLabel();
-        jlAreaDibujoOp2 = new javax.swing.JLabel();
+        jlAreaDibujo = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -111,7 +114,7 @@ public class VentanaPrincipal extends JFrame
         jl2.setText("Elementos del grupo:");
 
         jsExponente.setFont(new java.awt.Font("Comic Sans MS", 0, 18)); // NOI18N
-        jsExponente.setModel(new javax.swing.SpinnerNumberModel(1, 1, 5, 1));
+        jsExponente.setModel(new javax.swing.SpinnerNumberModel(1, 1, 7, 1));
         jsExponente.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jsExponenteStateChanged(evt);
@@ -156,50 +159,48 @@ public class VentanaPrincipal extends JFrame
                 .addContainerGap())
         );
 
-        jpOperaciones.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2), "Operaciones", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Comic Sans MS", 1, 24))); // NOI18N
-        jpOperaciones.setOpaque(false);
+        jpOpciones.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2), "Opciones", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Comic Sans MS", 1, 24))); // NOI18N
+        jpOpciones.setOpaque(false);
 
         jl3.setFont(new java.awt.Font("Comic Sans MS", 1, 20)); // NOI18N
-        jl3.setText("Operación +:");
+        jl3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jl3.setText("Operación");
 
-        jcbOperacion1.setFont(new java.awt.Font("Comic Sans MS", 0, 16)); // NOI18N
-        jcbOperacion1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jcbOperacion.setFont(new java.awt.Font("Comic Sans MS", 0, 16)); // NOI18N
+        jcbOperacion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Suma", "Producto" }));
+        jcbOperacion.setSelectedIndex(-1);
 
         jl4.setFont(new java.awt.Font("Comic Sans MS", 1, 20)); // NOI18N
-        jl4.setText("Operación x:");
+        jl4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jl4.setText("Polinomio Modulo");
 
-        jcbOperacion2.setFont(new java.awt.Font("Comic Sans MS", 0, 16)); // NOI18N
-        jcbOperacion2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jcbPoliModulo.setFont(new java.awt.Font("Comic Sans MS", 0, 16)); // NOI18N
 
-        javax.swing.GroupLayout jpOperacionesLayout = new javax.swing.GroupLayout(jpOperaciones);
-        jpOperaciones.setLayout(jpOperacionesLayout);
-        jpOperacionesLayout.setHorizontalGroup(
-            jpOperacionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jpOperacionesLayout.createSequentialGroup()
+        javax.swing.GroupLayout jpOpcionesLayout = new javax.swing.GroupLayout(jpOpciones);
+        jpOpciones.setLayout(jpOpcionesLayout);
+        jpOpcionesLayout.setHorizontalGroup(
+            jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jpOpcionesLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jpOperacionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jpOperacionesLayout.createSequentialGroup()
-                        .addComponent(jl3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jcbOperacion1, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jpOperacionesLayout.createSequentialGroup()
-                        .addComponent(jl4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jcbOperacion2, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(jl3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jcbOperacion, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jl4, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                    .addComponent(jcbPoliModulo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jpOperacionesLayout.setVerticalGroup(
-            jpOperacionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jpOperacionesLayout.createSequentialGroup()
+        jpOpcionesLayout.setVerticalGroup(
+            jpOpcionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jpOpcionesLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jpOperacionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jl3)
-                    .addComponent(jcbOperacion1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jpOperacionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jl4)
-                    .addComponent(jcbOperacion2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jl3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jcbOperacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jl4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jcbPoliModulo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(30, Short.MAX_VALUE))
         );
 
         jl6.setFont(new java.awt.Font("Comic Sans MS", 1, 36)); // NOI18N
@@ -207,11 +208,7 @@ public class VentanaPrincipal extends JFrame
 
         jl7.setFont(new java.awt.Font("Comic Sans MS", 1, 20)); // NOI18N
         jl7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jl7.setText("Representación +");
-
-        jl8.setFont(new java.awt.Font("Comic Sans MS", 1, 20)); // NOI18N
-        jl8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jl8.setText("Representación x");
+        jl7.setText("Representación Campo");
 
         jbDibujar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/dibujar.png"))); // NOI18N
         jbDibujar.setBorderPainted(false);
@@ -222,13 +219,9 @@ public class VentanaPrincipal extends JFrame
             }
         });
 
-        jlAreaDibujoOp1.setBackground(new java.awt.Color(255, 255, 255));
-        jlAreaDibujoOp1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
-        jlAreaDibujoOp1.setOpaque(true);
-
-        jlAreaDibujoOp2.setBackground(new java.awt.Color(255, 255, 255));
-        jlAreaDibujoOp2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
-        jlAreaDibujoOp2.setOpaque(true);
+        jlAreaDibujo.setBackground(new java.awt.Color(255, 255, 255));
+        jlAreaDibujo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        jlAreaDibujo.setOpaque(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -237,48 +230,40 @@ public class VentanaPrincipal extends JFrame
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jpOperaciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(88, 88, 88)
+                        .addGap(82, 82, 82)
                         .addComponent(jbDibujar, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jl6))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
+                        .addComponent(jpOpciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
                         .addComponent(jpGrupo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jlAreaDibujoOp1, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jl7, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jlAreaDibujoOp2, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jl8, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jlAreaDibujo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jl7, javax.swing.GroupLayout.DEFAULT_SIZE, 788, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jl7)
-                            .addComponent(jl8))
+                        .addComponent(jl7)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jlAreaDibujoOp1, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jlAreaDibujoOp2, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jlAreaDibujo, javax.swing.GroupLayout.PREFERRED_SIZE, 788, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jpGrupo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jpOperaciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jpOpciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jbDibujar, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jl6, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -286,35 +271,87 @@ public class VentanaPrincipal extends JFrame
 
     // Evento para definir el grupo de trabajo
     private void jsExponenteStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jsExponenteStateChanged
-        construirGrupo();
+        try
+        {
+            limpiar();
+            construirGrupo();
+        }
+        catch (Exception ex)
+        {
+            System.out.println(ex);
+        }
     }//GEN-LAST:event_jsExponenteStateChanged
 
     // Evento para dibujar 
     private void jbDibujarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbDibujarActionPerformed
-        dibujoOp1.dibujarCampo(matrizOp1, colores);
+        int tamGrupo = colores.length;
         
-        Icon temp = dibujoOp1.retornarLienzo();
+        if (jcbOperacion.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(this, "¡Por favor, seleccione una operación!", "ERROR",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         
-        jlAreaDibujoOp1.setIcon(temp);
+        try
+        {
+//            System.out.println("Viejo: " + galoisField.getReducingPolynomial());
+//            galoisField.setReducingPolynomial(33L);
+//            System.out.println("Nuevo: " + galoisField.getReducingPolynomial());
+            
+            
+//            Long temp = new Long(8);
+//            
+//            System.out.println("Es Irruducible: " + GF2N.isIrreducible(temp));
+//            galoisField.setReducingPolynomial(temp);
+//            System.out.println("Tamaño campo: " + galoisField.getFieldSize() + " - P. Irreducible: " + Integer.toBinaryString((int)galoisField.getReducingPolynomial()));
+//            System.out.println(temp.byteValue());
+            
+            int poliElegido = pModulos[jcbPoliModulo.getSelectedIndex()];
+            galoisField.setReducingPolynomial(poliElegido);
+            
+            for (int i=0; i < tamGrupo; i++)
+            {
+                //System.out.print("Fila " + (i+1) + ": ");
+                for (int j=0; j < tamGrupo; j++)
+                {
+                    if (jcbOperacion.getSelectedIndex() == 0)
+                    {
+                        matrizOp[i][j] = (int) galoisField.add(i, j);
+                    }
+                    else
+                    {
+                       matrizOp[i][j] = (int) galoisField.multiply(i, j); 
+                    }
+                    //System.out.print(matrizOp[i][j] + "\t");
+                }
+                //System.out.println();
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            System.out.println(ex);
+        }
         
+        dibujo.dibujarCampo(matrizOp, colores);
+        
+        Icon temp = dibujo.retornarLienzo();
+        jlAreaDibujo.setIcon(temp);
     }//GEN-LAST:event_jbDibujarActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JButton jbDibujar;
-    private javax.swing.JComboBox<String> jcbOperacion1;
-    private javax.swing.JComboBox<String> jcbOperacion2;
+    private javax.swing.JComboBox<String> jcbOperacion;
+    private javax.swing.JComboBox<String> jcbPoliModulo;
     private javax.swing.JLabel jl1;
     private javax.swing.JLabel jl2;
     private javax.swing.JLabel jl3;
     private javax.swing.JLabel jl4;
     private javax.swing.JLabel jl6;
     private javax.swing.JLabel jl7;
-    private javax.swing.JLabel jl8;
-    private javax.swing.JLabel jlAreaDibujoOp1;
-    private javax.swing.JLabel jlAreaDibujoOp2;
+    private javax.swing.JLabel jlAreaDibujo;
     private javax.swing.JPanel jpGrupo;
-    private javax.swing.JPanel jpOperaciones;
+    private javax.swing.JPanel jpOpciones;
     private javax.swing.JSpinner jsExponente;
     private javax.swing.JScrollPane jspElementosGrupo;
     private javax.swing.JTextArea jtaElementosGrupo;
