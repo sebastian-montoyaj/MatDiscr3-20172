@@ -1,16 +1,17 @@
 package Tarea3;
 
+// Importes necesarios para la clase
 import java.util.Arrays;
 import java.util.Random;
 
-// Clase cuyo proprosito es la respresentacion de un polinomio.
-// Los datos son almacenados en un arreglo y cada coeficiente del polinomio es accedido
-// por su indice numerico. Coeficientes mas grandes dentro del polinomio seran almacenados
-// en posiciones mas grandes del arreglo.
+// Clase cuyo proprosito es la respresentacion de un polinomio
+// NOTA:
+// 1. Los datos son almacenados en un arreglo y cada coeficiente del polinomio es accedido por su indice numerico.
+// 2. Coeficientes mas grandes dentro del polinomio seran almacenados en posiciones mas grandes del arreglo.
 public class Polynomial
 {
-    private long[] elements;
-    private int size;
+    private long[] elements; // Variable para almacenar los coeficientes del polinomio
+    private int size; // Variable para almacenar el tamaño del polinomio
     
     // Constructor de un polinomio vacio
     public Polynomial()
@@ -47,8 +48,7 @@ public class Polynomial
     }
     
     // Constructor de un polinomio, en el cual se especifica su tamaño.
-    // Donde el coeficiente mas alto es un numero positivo diferente de cero y
-    // los demas coeficientes estaran aleatoriamente entre 0 y and 2^bitSize - 1
+    // Donde el coeficiente mas alto es un numero positivo diferente de cero y los demas coeficientes estaran aleatoriamente entre 0 y and 2^bitSize - 1
     public Polynomial(int size, int bitSize) {
         this(size);
         if (bitSize < 1)

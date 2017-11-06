@@ -1,17 +1,12 @@
 package Tarea3;
 
+// Importe necesario para la clase
 import java.util.ArrayList;
 
-/**
- * Class GF2N implements methods for computation with finite fields. Instance of
- * this class is specified by reducing polynomial. This reducing polynomial is
- * used as characteristic polynomial for this Galois Field and methods for
- * computation with this field depend on it.
- *
- * @author Jakub Lipcak, Masaryk University
- */
-public class GF2N {
-
+// Clase encargada de implementar los metodos para operar campos finitos binarios
+public class GF2N
+{
+    // Atributos para almacenar las caracteristicas del campo y facilitar las operaciones entre los elementos del mismo
     private static final long[] BINARY_POWERS = {1L, 2L, 4L, 8L, 16L, 32L, 64L, 128L, 256L, 512L, 1024L, 2048L,
         4096L, 8192L, 16384L, 32768L, 65536L, 131072L, 262144L, 524288L, 1048576L, 2097152L, 4194304L, 8388608L,
         16777216L, 33554432L, 67108864L, 134217728L, 268435456L, 536870912L, 1073741824L, 2147483648L,
@@ -23,49 +18,52 @@ public class GF2N {
         2305843009213693952L, 4611686018427387904L, 9223372036854775807L};
     private long reducingPolynomial;
     private short fieldSize;
-
-    /**
-     * Constructs an object of GF2N Class. This object has to be specified by
-     * reducing polynomial. This polynomial is used as characteristic polynomial
-     * for Galois field, in which we want to perform operations.
-     *
-     * @param reducingPolynomial Characteristic polynomial of Galois field. It
-     * is represented by long, and coefficients of this polynomial are created
-     * from binary representation of this number.
-     */
-    public GF2N(long reducingPolynomial) throws Exception {
-
-        if (reducingPolynomial <= 0) {
+    
+    // Constructor del campo.
+    // Parametro - reducingPolynomial: Este polinomio es usado como el polinomio carasteristico del campo y es el que define las operaciones que se pueden efectuar.
+    public GF2N(long reducingPolynomial) throws Exception
+    {
+        if (reducingPolynomial <= 0)
+        {
             throw new Exception("Reducing polynomial must be represented by positive number.");
         }
 
         this.reducingPolynomial = reducingPolynomial;
         fieldSize = countBinarySize(reducingPolynomial);
     }
-
-    public long add(long element1, long element2) throws Exception {
+    
+    // Metodo para sumar dos elementos del campo
+    public long add(long element1, long element2) throws Exception
+    {
         isInField(element1, element2);
         return element1 ^ element2;
     }
-
-    public long subtract(long element1, long element2) throws Exception {
+    
+    // Metodo para restar dos elementos del campo
+    public long subtract(long element1, long element2) throws Exception
+    {
         isInField(element1, element2);
         return element1 ^ element2;
     }
-
-    public long multiply(long element1, long element2) throws Exception {
+    
+    // Metodo para multiplicar dos elementos del campo
+    public long multiply(long element1, long element2) throws Exception
+    {
         isInField(element1, element2);
 
         long result = 0;
         long element2Actual = element2;
 
-        while (element2Actual != 0) {
+        while (element2Actual != 0)
+        {
             long actualResult = element1;
             int actualElement2Size = countBinarySize(element2Actual);
 
-            for (int x = 0; x < actualElement2Size; x++) {
+            for (int x = 0; x < actualElement2Size; x++)
+            {
                 actualResult <<= 1;
-                if (actualResult > (BINARY_POWERS[fieldSize] - 1)) {
+                if (actualResult > (BINARY_POWERS[fieldSize] - 1))
+                {
                     actualResult ^= reducingPolynomial;
                 }
             }
@@ -75,47 +73,55 @@ public class GF2N {
 
         return result;
     }
-
-    public long divide(long element1, long element2) throws Exception {
+    
+    // Metodo para dividir dos elementos del campo
+    public long divide(long element1, long element2) throws Exception
+    {
         isInField(element1, element2);
-        if (element2 == 0) {
+        if (element2 == 0)
+        {
             throw new Exception("Division by zero.");
         }
+        
         return (multiply(element1, invert(element2)));
     }
-
-    public long invert(long element) throws Exception {
+    
+    // Metodo para encontrar el inverso del elemento definido o dado en los parametros
+    public long invert(long element) throws Exception
+    {
         isInField(element);
 
-        if (element == 1) {
+        if (element == 1)
+        {
             return 1;
         }
 
-        if (element == 0) {
+        if (element == 0)
+        {
             throw new Exception("Cannot find inverse for ZERO.");
         }
 
-        //prepare for division
+        // Preparandose para la division
         long remainder = element;
         long numerator = reducingPolynomial;
         long denumerator = element;
 
-        //prepare to find Bezout's identity
+        // Preparandose para encontrar la identidad de Bezout
         long temp = 0;
         ArrayList<Long> resultList = new ArrayList<>();
         ArrayList<Long> bezoutIdentity = new ArrayList<>();
-
-
-        //find greatest greatest common divisor, last positive remainder
-        while (remainder != 0) {
-
+        
+        // Encontrando el maximo comun divisor, ultimo resto positivo
+        while (remainder != 0)
+        {
             short numeratorBinarySize = countBinarySize(numerator);
             short denumeratorBinarySize = countBinarySize(denumerator);
             long tempNumerator = numerator;
-
-            //division of binary polynomial
+            
+            // division binaria del polinomio
             long result = 0;
-            while (numeratorBinarySize >= denumeratorBinarySize) {
+            while (numeratorBinarySize >= denumeratorBinarySize)
+            {
                 temp = 1;
                 temp <<= (numeratorBinarySize - denumeratorBinarySize);
                 result ^= temp;
@@ -126,11 +132,12 @@ public class GF2N {
             }
             remainder = tempNumerator;
 
-            if (remainder == 0 && denumerator != 1) {
+            if (remainder == 0 && denumerator != 1)
+            {
                 throw new Exception("Cannot compute inverse" + " for this element.");
             }
-
-            //resultList data neccessary to find Bezout's identity
+            
+            // Informacion de resultList que es necesaria para encontrar la identidad de Bezout
             resultList.add(numerator);
             resultList.add(denumerator);
             resultList.add(result);
@@ -139,8 +146,9 @@ public class GF2N {
             denumerator = remainder;
         }
 
-        if (resultList.size() > 3) {
-            //we don't need last 3 values
+        if (resultList.size() > 3)
+        {
+            // No son necesarios los ultimos 3 valores
             resultList.remove(resultList.size() - 1);
             resultList.remove(resultList.size() - 1);
             resultList.remove(resultList.size() - 1);
@@ -150,10 +158,10 @@ public class GF2N {
         bezoutIdentity.add(resultList.get(resultList.size() - 3));
         bezoutIdentity.add(resultList.get(resultList.size() - 2));
         bezoutIdentity.add(resultList.get(resultList.size() - 1));
-
-
-        //find Bezout's identity from resultList data counted in Euclidean algorithm
-        while (resultList.size() != 3) {
+        
+        // Encontrando la identidad de Bezout a partir de la informacion de resultList en el algortimo Euclidiano
+        while (resultList.size() != 3)
+        {
             resultList.remove(resultList.size() - 1);
             resultList.remove(resultList.size() - 1);
             resultList.remove(resultList.size() - 1);
@@ -164,24 +172,28 @@ public class GF2N {
             bezoutIdentity.set(2, resultList.get(resultList.size() - 2));
             bezoutIdentity.set(3, add(temp, multiply(bezoutIdentity.get(3), resultList.get(resultList.size() - 1))));
         }
-
-        //inverted element
+        
+        // Finalmente, se retona el inverso si se encontro
         return bezoutIdentity.get(3);
     }
-
-    //Square-and-multiply to compute power
-    public long power(long element, long exponent) throws Exception {
+    
+    // Eleva al cuadrado y multiplica para calcular la potencia
+    public long power(long element, long exponent) throws Exception
+    {
         isInField(element);
 
-        if (exponent < 0) {
+        if (exponent < 0)
+        {
             throw new Exception("Cannot compute power with negative exponent!");
         }
 
-        if (exponent == 0 && element != 0) {
+        if (exponent == 0 && element != 0)
+        {
             return 1l;
         }
 
-        if (exponent == 0 && element == 0) {
+        if (exponent == 0 && element == 0)
+        {
             return 0l;
         }
 
@@ -189,8 +201,10 @@ public class GF2N {
         long a = element;
         long x = exponent;
 
-        while (x != 1) {
-            if ((x % 2) == 1) {
+        while (x != 1)
+        {
+            if ((x % 2) == 1)
+            {
                 result = multiply(result, a);
             }
             x /= 2;
@@ -199,161 +213,186 @@ public class GF2N {
 
         return multiply(result, a);
     }
-
-    /**
-     * Polynomial with binary coefficients is created from binary representation
-     * of long value taken as parameter. This method determines, whether this
-     * polynomial is irreducible or not.
-     *
-     * @param polynomial binary polynomial represented by long
-     * @return true, if polynomial is irreducible, false otherwise
-     */
-    public static boolean isIrreducible(long polynomial) throws Exception {
-
-        //Rabin's test of irreducibility
-        if (polynomial <= 0) {
+    
+    // Metodo estatico para determinar si el polinomio dado es irreducible o no.
+    // El retorno es verdadero SI el polinomio es irreducible, falso de lo contrario.
+    public static boolean isIrreducible(long polynomial) throws Exception
+    {
+        // En caso que el polinomio sea negativo entonces se lanza de inmediato una excepcion porque un polinomio binario solo puede ser positivo
+        if (polynomial <= 0)
+        {
             throw new Exception("Polynomial must be represented by positive number.");
         }
-        if (polynomial == 2) {
+        
+        // Si el polinomio es 2 (O sea, x) entonces si es reducible por lo que se retorna falso
+        if (polynomial == 2)
+        {
             return false;
         }
-        if (countBinarySize(polynomial) > 30) {
+        
+        // Si el polinomio es muy grande entonces se lanza una excepcion porque ya es muy dificil operar con un polinomio de mas de 30 componentes
+        if (countBinarySize(polynomial) > 30)
+        {
             throw new Exception("Cannot test irreducibility for such a big number.");
         }
-
+        
+        // Si pasa las validaciones anteriores entonces se crea la representacion del polinomio a partir del numero(Long) ingresado
         Polynomial poly = new Polynomial((int) countBinarySize(polynomial) + 1);
         int degree = poly.getSize() - 1;
         long value = polynomial;
-
-        //create polynomial representation from Long
-        for (int x = 0; x < poly.getSize(); x++) {
-            if ((value & 1) == 1) {
+        
+        for (int x = 0; x < poly.getSize(); x++)
+        {
+            if ((value & 1) == 1)
+            {
                 poly.setElement(x, 1);
-            } else {
+            }
+            else
+            {
                 poly.setElement(x, 0);
             }
             value >>= 1;
         }
 
         PolynomialGF2N polyGF = new PolynomialGF2N(3);
-        long[] primes = new long[]{2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
-            31, 37, 41, 43, 47, 53, 59, 61};
+        long[] primes = new long[]{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61};
         ArrayList<Long> divisors = new ArrayList<>();
-
-        //find prime divisors of degree of the polynomial
-        for (int x = 0; primes[x] <= degree; x++) {
-            if (degree % primes[x] == 0) {
+        
+        // Se buscan los divisores primos del mismo grado del polinomio
+        for (int x = 0; primes[x] <= degree; x++)
+        {
+            if (degree % primes[x] == 0)
+            {
                 divisors.add(primes[x]);
             }
         }
-
-        //divide degree by all its prime divisors
-        for (int x = 0; x < divisors.size(); x++) {
+        
+        // Se divide el grado por todos los divisores primos
+        for (int x = 0; x < divisors.size(); x++)
+        {
             divisors.set(x, (long) (degree / divisors.get(x)));
         }
-
-
-        for (int x = 0; x < divisors.size(); x++) {
-            //prepare tempPoly:   x^(2^divisors(x)) + x
+        
+        for (int x = 0; x < divisors.size(); x++)
+        {
+            // Se prepara tempPoly como:  x^(2^divisors(x)) + x
             Polynomial tempPoly = new Polynomial((int) Math.pow(2, divisors.get(x)) + 1);
             tempPoly.setElement(1, 1);
             tempPoly.setElement(tempPoly.getSize() - 1, 1);
 
             Polynomial remainder = new Polynomial(tempPoly.getSize());
             polyGF.divide(tempPoly, poly, remainder);
-
-            //remainder = tempPoly % poly
+            
+            // Se calcula el resto: remainder = tempPoly % poly
             remainder.clearZeroValues();
-
-            //gcd must be 1 for every irreducible polynomial
+            
+            // El maximo comun divisor debe ser 1 para cada polinomio irreducible
             Polynomial gcd = polyGF.gcd(poly, remainder);
-            if (!(gcd.getSize() == 1 && gcd.getElement(0) == 1)) {
+            if (!(gcd.getSize() == 1 && gcd.getElement(0) == 1))
+            {
                 return false;
             }
         }
 
-        //tempPoly = x^(2^degree) + x
+        // Se clacula tempPoly como: x^(2^degree) + x
         Polynomial tempPoly = new Polynomial((int) Math.pow(2, degree) + 1);
         tempPoly.setElement(1, 1);
         tempPoly.setElement(tempPoly.getSize() - 1, 1);
 
-
-        //remainder = tempPoly % poly
+        // Se calcula el resto: remainder = tempPoly % poly
         Polynomial remainder = new Polynomial(tempPoly.getSize());
         polyGF.divide(tempPoly, poly, remainder);
         remainder.clearZeroValues();
 
-        //tempPoly % poly must be 1 for every irreducible polynomial
-        if (remainder.getSize() == 0) {
+        // tempPoly % poly debe ser 1 para cada polinomio irreducible
+        if (remainder.getSize() == 0)
+        {
             return true;
         }
-
+        
         return false;
     }
-
-    /**
-     * Returns reducing polynomial of this Galois field.
-     *
-     * @return reducing polynomial
-     */
-    public long getReducingPolynomial() {
+    
+    // Metodo para obtener la representacion polinomica de un polinomio el cual originalmente esta como un numero
+    public static String obtenerExpresionPolinomio(long polinomio)
+    {
+        if (polinomio <= 0)
+        {
+            return "[0 + ]";
+        }
+        
+        Polynomial poly = new Polynomial((int) countBinarySize(polinomio) + 1);
+        int degree = poly.getSize() - 1;
+        long value = polinomio;
+        
+        for (int x = 0; x < poly.getSize(); x++)
+        {
+            if ((value & 1) == 1)
+            {
+                poly.setElement(x, 1);
+            }
+            else
+            {
+                poly.setElement(x, 0);
+            }
+            value >>= 1;
+        }
+        
+        return poly.toStringAsPoly();
+    }
+    
+    // Metodo para obtener el polinomio reductir del campo
+    public long getReducingPolynomial()
+    {
         return reducingPolynomial;
     }
-
-    /**
-     * Set reducing polynomial for computation in this Galois Field.
-     *
-     * @param reducingPolynomial reducing polynomial to be set
-     */
-    public void setReducingPolynomial(long reducingPolynomial) throws Exception {
-
-        if (reducingPolynomial <= 0) {
+    
+    // Metodo para establecer el polinomio reductor del campo
+    public void setReducingPolynomial(long reducingPolynomial) throws Exception
+    {
+        if (reducingPolynomial <= 0)
+        {
             throw new Exception("Reducing polynomial must be represented by positive number.");
         }
 
         this.reducingPolynomial = reducingPolynomial;
         fieldSize = countBinarySize(reducingPolynomial);
     }
-
-    /**
-     * Return max binary size of elements, which belong to this Galois Field.
-     *
-     * @return field size
-     */
-    public short getFieldSize() {
+    
+    // Metodo para obtener el tamaño del campo
+    public short getFieldSize()
+    {
         return fieldSize;
     }
-
-    /**
-     * Compute binary size of input value.
-     *
-     * @param value value
-     * @return binary size of value
-     */
-    public static short countBinarySize(long value) {
-
+    
+    // Metodo auxiliar que sirve para calcular el tamaño en bianrio del valor de entrada
+    public static short countBinarySize(long value)
+    {
         short result = -1;
 
-        while (value != 0) {
+        while (value != 0)
+        {
             value >>= 1;
             result++;
         }
-//////////        
-//////////        System.out.println("countBinarySize - " + result);
         
         return result;
     }
-
-    private void isInField(long element) throws Exception {
-
-        if ((element >= BINARY_POWERS[fieldSize]) || (element < 0)) {
+    
+    // Metodo para determinar si el elemento en cuestion pertence al campo
+    private void isInField(long element) throws Exception
+    {
+        if ((element >= BINARY_POWERS[fieldSize]) || (element < 0))
+        {
             throw new Exception("Values for this reducing polynomial must be in [0, " + (BINARY_POWERS[fieldSize] - 1) + "].");
         }
     }
-
-    private void isInField(long element1, long element2) throws Exception {
-
-        if ((element1 >= BINARY_POWERS[fieldSize]) || (element2 >= BINARY_POWERS[fieldSize]) || (element1 < 0) || (element2 < 0)) {
+    
+    // Metodo para determinar si la operacion de dos elementos del campo quedara dentro del mismo campo
+    private void isInField(long element1, long element2) throws Exception
+    {
+        if ((element1 >= BINARY_POWERS[fieldSize]) || (element2 >= BINARY_POWERS[fieldSize]) || (element1 < 0) || (element2 < 0))
+        {
             throw new Exception("Values for this reducing polynomial must be in [0, " + (BINARY_POWERS[fieldSize] - 1) + "].");
         }
     }

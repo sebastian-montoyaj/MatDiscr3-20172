@@ -1,62 +1,47 @@
 package Tarea3;
 
+// Importe necesario para la clase
 import java.util.ArrayList;
 
-/**
- * Class PolynomialGF2N implements interface GaloisFieldPolynomialArithmetic for
- * computation with polynomials in Galois Fields. Object of PolynomialGF2N class
- * has to be specified by reducing polynomial for Galois Field, or by object of
- * class GF2N.
- *
- * @author Jakub Lipcak, Masaryk University
- *
- */
+// Clase de apoyo a GF2N y la cual sirve para realizar la representacion polinomial de los elementos de un campo
 public class PolynomialGF2N
 {
+    // Atributo para almacenar el campo con el que se esta trabajando
     private GF2N galoisField;
-
-    /**
-     * Constructs an object of PolynomialGF2N class. Object of PolynomialGF2N
-     * class has to be specified by galoisField, which is used for computation
-     * with polynomials over Galois Field.
-     *
-     * @param galoisField GF2N galoisField used for computation with polynomials
-     * over Galois Field
-     *
-     */
+    
+    // Construtor de la clase y que solo requiere del campo que se quiere estudiar
     public PolynomialGF2N(GF2N galoisField)
     {
         this.galoisField = galoisField;
     }
-
-    /**
-     * Constructs an object of PolynomialGF2N class. Object of PolynomialGF2N
-     * class has to be specified by reducingPolynomial, which is used as
-     * characteristic reducingPolynomial for computation with polynomials over
-     * Galois Field.
-     *
-     * @param reducingPolynomial reducing polynomial for galoisField used for
-     * computation with polynomials over Galois Field.
-     *
-     */
-    public PolynomialGF2N(long reducingPolynomial)
+    
+    // Construtor de la clase y que crea el campo a partir del polinomio reductor que esta representado como un numero(Long)
+    public PolynomialGF2N(long reducingPolynomial) throws Exception
     {
         galoisField = new GF2N(reducingPolynomial);
     }
     
-    public Polynomial add(Polynomial polynomial1, Polynomial polynomial2)
+    // Metodo para sumar dos elementos del campo representados como polinomios
+    public Polynomial add(Polynomial polynomial1, Polynomial polynomial2) throws Exception
     {
         int length = Math.max(polynomial1.getSize(), polynomial2.getSize());
         Polynomial result = new Polynomial(length);
 
-        for (int x = 0; x < length; x++) {
-            try {
+        for (int x = 0; x < length; x++)
+        {
+            try
+            {
                 long value = galoisField.add(polynomial1.getElement(x), polynomial2.getElement(x));
                 result.setElement(x, value);
-            } catch (IndexOutOfBoundsException ex) {
-                if (x >= polynomial1.getSize()) {
+            }
+            catch (IndexOutOfBoundsException ex)
+            {
+                if (x >= polynomial1.getSize())
+                {
                     result.setElement(x, polynomial2.getElement(x));
-                } else {
+                }
+                else
+                {
                     result.setElement(x, polynomial1.getElement(x));
                 }
             }
@@ -65,21 +50,28 @@ public class PolynomialGF2N
         return result.clearZeroValues();
     }
     
-    public Polynomial subtract(Polynomial polynomial1, Polynomial polynomial2) {
+    // Metodo para restar dos elementos del campo representados como polinomios
+    public Polynomial subtract(Polynomial polynomial1, Polynomial polynomial2) throws Exception
+    {
         return add(polynomial1, polynomial2);
     }
     
-    public Polynomial multiply(Polynomial polynomial1, Polynomial polynomial2) {
-
-        if (isZero(polynomial1) || isZero(polynomial2)) {
+    // Metodo para multiplicar dos elementos del campo representados como polinomios
+    public Polynomial multiply(Polynomial polynomial1, Polynomial polynomial2) throws Exception
+    {
+        if (isZero(polynomial1) || isZero(polynomial2))
+        {
             return new Polynomial();
         }
 
         Polynomial result = new Polynomial(polynomial1.getSize() + polynomial2.getSize() - 1);
 
-        for (int x = 0; x < polynomial2.getSize(); x++) {
-            for (int y = 0; y < polynomial1.getSize(); y++) {
-                if (polynomial1.getElement(y) != 0) {
+        for (int x = 0; x < polynomial2.getSize(); x++)
+        {
+            for (int y = 0; y < polynomial1.getSize(); y++)
+            {
+                if (polynomial1.getElement(y) != 0)
+                {
                     int index = y + x;
                     long multiplyResult = galoisField.multiply(polynomial1.getElement(y), polynomial2.getElement(x));
                     long originalValue = result.getElement(index);
@@ -91,9 +83,11 @@ public class PolynomialGF2N
         return result.clearZeroValues();
     }
     
-    public Polynomial divide(Polynomial polynomial1, Polynomial polynomial2) throws Exception {
-
-        if (isZero(polynomial2)) {
+    // Metodos para dividir dos elementos del campo representados como polinomios
+    public Polynomial divide(Polynomial polynomial1, Polynomial polynomial2) throws Exception
+    {
+        if (isZero(polynomial2))
+        {
             throw new Exception("Division by zero!");
         }
 
@@ -101,20 +95,24 @@ public class PolynomialGF2N
         return divide(polynomial1, polynomial2, remainder);
     }
     
-    public Polynomial divide(Polynomial polynomial1, Polynomial polynomial2, Polynomial remainder) throws Exception {
-
-        if (isZero(polynomial2)) {
+    public Polynomial divide(Polynomial polynomial1, Polynomial polynomial2, Polynomial remainder) throws Exception
+    {
+        if (isZero(polynomial2))
+        {
             throw new Exception("Division by zero!");
         }
 
         Polynomial result;
         Polynomial rem;
 
-        //prepare arrays of good length
-        if (polynomial1.getSize() >= polynomial2.getSize()) {
+        // Se preparan arreglos de un buen tamaño
+        if (polynomial1.getSize() >= polynomial2.getSize())
+        {
             result = new Polynomial(polynomial1.getSize() - polynomial2.getSize() + 1);
             rem = new Polynomial(polynomial1.getSize() - polynomial2.getSize() + 1);
-        } else {
+        }
+        else
+        {
             result = new Polynomial(1);
             rem = new Polynomial(polynomial1.getSize());
         }
@@ -122,34 +120,40 @@ public class PolynomialGF2N
         Polynomial numerator = polynomial1;
         Polynomial mulResult = new Polynomial(polynomial1.getSize());
 
-        while ((numerator.getSize() >= polynomial2.getSize())) {
-
-            //divide
+        while ((numerator.getSize() >= polynomial2.getSize()))
+        {
+            // Se procede con la division
             long value = galoisField.divide(numerator.getElement(numerator.getSize() - 1), polynomial2.getElement(polynomial2.getSize() - 1));
             result.setElement(numerator.getSize() - polynomial2.getSize(), value);
 
-            //subtract divided part from numerator
+            // Se resta parte de la division del numerador
             rem.setElement(numerator.getSize() - polynomial2.getSize(), value);
             mulResult = multiply(polynomial2, rem);
             numerator = subtract(numerator, mulResult);
-
-            //set remainder to correct length necessary for next divison
-            while ((numerator.getSize() - polynomial2.getSize() + 1) < rem.getSize()) {
-                if (rem.getSize() == 0) {
+            
+            // Se establece el resto para corregir la longitud necesaria para la division
+            while ((numerator.getSize() - polynomial2.getSize() + 1) < rem.getSize())
+            {
+                if (rem.getSize() == 0)
+                {
                     break;
-                } else {
+                }
+                else
+                {
                     Polynomial newRem = new Polynomial(rem.getSize() - 1);
-                    for (int x = 0; x < newRem.getSize(); x++) {
+                    for (int x = 0; x < newRem.getSize(); x++)
+                    {
                         newRem.setElement(x, rem.getElement(x));
                     }
                     rem = newRem;
                 }
             }
         }
-
-        //copy remainder of division to remainder attribute of this method
+        
+        // Se copia el resto de la division al resto del atributo de este metodo
         remainder.setSize(numerator.getSize());
-        for (int x = 0; x < numerator.getSize(); x++) {
+        for (int x = 0; x < numerator.getSize(); x++)
+        {
             remainder.setElement(x, numerator.getElement(x));
         }
 
@@ -157,10 +161,11 @@ public class PolynomialGF2N
     }
 
     // result = gcd(polynomial1, polynomial2) = a*polynomial1 + b*polynomial2
-    private Polynomial xgcd(Polynomial polynomial1, Polynomial polynomial2, Polynomial a, Polynomial b) throws Exception {
-
-        if (polynomial2.getSize() > polynomial1.getSize()) {
-            //swap
+    private Polynomial xgcd(Polynomial polynomial1, Polynomial polynomial2, Polynomial a, Polynomial b) throws Exception
+    {
+        if (polynomial2.getSize() > polynomial1.getSize())
+        {
+            // Se intercambia
             Polynomial swapPoly = polynomial1;
             polynomial1 = polynomial2;
             polynomial2 = swapPoly;
@@ -168,26 +173,26 @@ public class PolynomialGF2N
             a = b;
             b = swapPoly;
         }
-
-        //prepare for division
+        
+        // Se prepara para la division
         Polynomial result = new Polynomial(polynomial2.getSize());
         Polynomial remainder = polynomial2;
         Polynomial numerator = polynomial1;
         Polynomial denumerator = polynomial2;
-
-        //prepare to find Bezout's identity
+        
+        // Se prepara para buscar la identidad de Bezout
         Polynomial temp;
         ArrayList<Polynomial> resultList = new ArrayList<>();
         ArrayList<Polynomial> bezoutIdentity = new ArrayList<>();
-
-
-        //find greatest greatest common divisor, last positive remainder
-        while (!(remainder.getSize() == 0)) {
+        
+        // Se busca el maximo comun divisor, ultimo resto positivo
+        while (!(remainder.getSize() == 0))
+        {
             result = remainder;
             remainder = new Polynomial(Math.max(numerator.getSize(), denumerator.getSize()));
             temp = divide(numerator, denumerator, remainder);
-
-            //resultList data neccessary to find Bezout's identity
+            
+            // Informacion de resultList que es necesaria para encontrar la identidad de Bezout
             resultList.add(numerator);
             resultList.add(denumerator);
             resultList.add(temp);
@@ -197,8 +202,9 @@ public class PolynomialGF2N
             denumerator = remainder;
         }
 
-        if (resultList.size() > 3) {
-            //we don't need last 3 values
+        if (resultList.size() > 3)
+        {
+            // No son necesarios los ultimos 3 valores
             resultList.remove(resultList.size() - 1);
             resultList.remove(resultList.size() - 1);
             resultList.remove(resultList.size() - 1);
@@ -209,10 +215,10 @@ public class PolynomialGF2N
         bezoutIdentity.add(resultList.get(resultList.size() - 3));
         bezoutIdentity.add(resultList.get(resultList.size() - 2));
         bezoutIdentity.add(resultList.get(resultList.size() - 1));
-
-
-        //find Bezout's identity from resultList data counted in Euclidean algorithm
-        while (resultList.size() != 3) {
+        
+        // Encontrando la identidad de Bezout a partir de la informacion de resultList en el algortimo Euclidiano
+        while (resultList.size() != 3)
+        {
             resultList.remove(resultList.size() - 1);
             resultList.remove(resultList.size() - 1);
             resultList.remove(resultList.size() - 1);
@@ -225,26 +231,36 @@ public class PolynomialGF2N
         }
 
         //save Bezout's coefficients and return gcd
-        for (int x = 0; x < bezoutIdentity.get(0).getSize(); x++) {
+        // Se guardan los coeficientes de Bezout y se retorna el gcd
+        for (int x = 0; x < bezoutIdentity.get(0).getSize(); x++)
+        {
             a.setElement(x, bezoutIdentity.get(0).getElement(x));
         }
-        for (int x = 0; x < bezoutIdentity.get(3).getSize(); x++) {
+        
+        for (int x = 0; x < bezoutIdentity.get(3).getSize(); x++)
+        {
             b.setElement(x, bezoutIdentity.get(3).getElement(x));
         }
 
-        //gcd, not normalized
+        // El gcd, no esta normalizado
         return result;
     }
     
-    public Polynomial gcd(Polynomial polynomial1, Polynomial polynomial2) throws Exception {
-
-        if (!isZero(polynomial1) && isZero(polynomial2)) {
+    // Metodo para encontrar el maximo comun divisor
+    public Polynomial gcd(Polynomial polynomial1, Polynomial polynomial2) throws Exception
+    {
+        if (!isZero(polynomial1) && isZero(polynomial2))
+        {
             return polynomial1;
         }
-        if (isZero(polynomial1) && !isZero(polynomial2)) {
+        
+        if (isZero(polynomial1) && !isZero(polynomial2))
+        {
             return polynomial2;
         }
-        if (isZero(polynomial1) && isZero(polynomial2)) {
+        
+        if (isZero(polynomial1) && isZero(polynomial2))
+        {
             return new Polynomial(0);
         }
 
@@ -252,10 +268,10 @@ public class PolynomialGF2N
         Polynomial remainder = polynomial2;
         Polynomial numerator = polynomial1;
         Polynomial denumerator = polynomial2;
-
-
-        //find greatest greatest common divisor, last positive remainder
-        while (!(remainder.getSize() == 0)) {
+        
+        // Encontrando el maximo comun divisor, ultimo resto positivo
+        while (!(remainder.getSize() == 0))
+        {
             result = remainder;
             remainder = new Polynomial(Math.max(numerator.getSize(), denumerator.getSize()));
             divide(numerator, denumerator, remainder);
@@ -263,53 +279,57 @@ public class PolynomialGF2N
             numerator = denumerator;
             denumerator = remainder;
         }
-
-        //make gcd monic
+        
+        // Se hace el gcd monico
         Polynomial monicDiv = new Polynomial(1);
         monicDiv.setElement(0, result.getElement(result.getSize() - 1));
         return divide(result, monicDiv);
-
     }
     
-    public Polynomial invert(Polynomial polynomial, Polynomial moduloPolynomial) throws Exception {
-
-        if (isZero(polynomial) || isZero(moduloPolynomial)) {
+    public Polynomial invert(Polynomial polynomial, Polynomial moduloPolynomial) throws Exception
+    {
+        if (isZero(polynomial) || isZero(moduloPolynomial))
+        {
             throw new Exception("Cannot compute inverse for zero polynomials.");
         }
 
-        if ((polynomial.getSize() >= moduloPolynomial.getSize()) || (moduloPolynomial.getSize() == 1)) {
+        if ((polynomial.getSize() >= moduloPolynomial.getSize()) || (moduloPolynomial.getSize() == 1))
+        {
             throw new Exception("Cannot compute inverse for this args.");
         }
 
-        if (polynomial.getSize() == 1) {
-            //special solution for special case 
+        if (polynomial.getSize() == 1)
+        {
+            // Solucion especial para un caso especial
             return divide(add(new Polynomial(1, 1), multiply(moduloPolynomial, polynomial)), polynomial);
         }
 
         Polynomial gcd;
         Polynomial result = new Polynomial(moduloPolynomial.getSize());
         Polynomial temp = new Polynomial(moduloPolynomial.getSize());
-
-        //xgcd to set the result
+        
         gcd = xgcd(moduloPolynomial, polynomial, temp, result);
 
-        if (gcd.getSize() != 1) {
+        if (gcd.getSize() != 1)
+        {
             throw new Exception("Cannot compute inverse for this args.");
         }
-
-        //normalize result, after this, remainder after division by moduloPolynomial will be 1
+        
+        // Se normaliza el resultado, despues de esto el resto despues de la division por moduloPolynomial sera 1
         result.clearZeroValues();
         return divide(result, gcd);
     }
-
-    //square and multiply algorithm is used to compute power
-    public Polynomial power(Polynomial polynomial, long exponent) throws Exception {
-
-        if (exponent <= 0) {
+    
+    // Metodo para calcular la potencia
+    public Polynomial power(Polynomial polynomial, long exponent) throws Exception
+    {
+        if (exponent <= 0)
+        {
             throw new Exception("Exponent must be positive number!");
         }
 
-        if (isZero(polynomial)) {
+        if (isZero(polynomial))
+        {
             return new Polynomial();
         }
 
@@ -318,8 +338,10 @@ public class PolynomialGF2N
         Polynomial a = polynomial;
         long x = exponent;
 
-        while (x != 1) {
-            if ((x % 2) == 1) {
+        while (x != 1)
+        {
+            if ((x % 2) == 1)
+            {
                 result = multiply(result, a);
             }
             x /= 2;
@@ -328,15 +350,19 @@ public class PolynomialGF2N
 
         return multiply(result, a);
     }
-
-    //check, if polynomial is not equal to zero
-    private boolean isZero(Polynomial polynomial) {
-        if (polynomial.getSize() == 0) {
+    
+    // Metodo para revisar, si el polinomio no es igual a CERO
+    private boolean isZero(Polynomial polynomial)
+    {
+        if (polynomial.getSize() == 0)
+        {
             return true;
         }
 
-        for (int x = 0; x < polynomial.getSize(); x++) {
-            if (polynomial.getElement(x) != 0) {
+        for (int x = 0; x < polynomial.getSize(); x++)
+        {
+            if (polynomial.getElement(x) != 0)
+            {
                 return false;
             }
         }

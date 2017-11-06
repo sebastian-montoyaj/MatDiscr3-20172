@@ -2,18 +2,27 @@ package Tarea3;
 
 // Se importan los paquetes que necesita la clase
 import Imagenes.PanelPrincipal;
+import java.awt.Color;
 import java.awt.Image;
 import javax.swing.*;
 
 // Ventana principal que interactua con el usuario
 public class VentanaPrincipal extends JFrame
 {
+    // Variable para dibujar las representaciones del campo
     Graficador dibujo = new Graficador();
     
+    // Matriz para almacenar los resultados de las operaciones cruz(+) o asterisco(*)
+    // Como tal esta sera la variable que definira QUE se dibujara
     int[][] matrizOp;
+    
+    // Variable que guardara el color que se le asigna a cada elemento del campo
     float[] colores;
     
+    // Variable que representara el campo y con el cual se van a realizar las operaciones validas sobre el campo
     GF2N galoisField;
+    
+    // Variable para almacenar los polinomios de reduccion validos del campo
     int[] pModulos;
     
     // Constructor de la clase o ventana. Su proposito no va mas de lo estetico o para inicializacion de variables
@@ -35,45 +44,66 @@ public class VentanaPrincipal extends JFrame
         PanelPrincipal panelConFondo = new PanelPrincipal();
         add(panelConFondo);
         
-        // ----------------------------------------------------------------------------
+        // Y se invoca el metodo constructor del campo inicial (o sea, GF(2)) con el que el usuario interactua en un principio
         construirGrupo();
     }
     
+    // Metodo para construir o inicializar el campo
     private void construirGrupo() throws Exception
     {
+        // En primer lugar, se calcula el numero de elementos del campo que debe ser igual a 2^m
         int tamGrupo = (int) Math.pow(2, (int)jsExponente.getValue());
+        
+        // Ya con el numero de elementos del campo, se reserva una matriz cuadrada con esas dimensiones y la cual se utilizara para el calculo del espacio representativo del campo
         matrizOp = new int[tamGrupo][tamGrupo];
+        
+        // Del mismo modo, se reserva el mismo numero de espacios pero esta vez para un vector que guaradara el color asociado a cada elemento del espacio
         colores = new float[tamGrupo];
         
-        String elementosGrupo = "";
+        // A continuacion, se calcula el color y la representacion binaria de cada elemento del campo y se llevan a sus respectivas variables
+        String elementosGrupo = "<html><body><font size=\"6\">";
         for (int i=0; i < tamGrupo; i++)
         {
-            elementosGrupo = elementosGrupo + Integer.toBinaryString(i);
+            // NOTA: El color es calculado con base al sistema de colores HSV
+            colores[i] = ((320/tamGrupo)*i)/360.0f;
+            
+            elementosGrupo = elementosGrupo + "<span style=\"background-color: " + String.format("#%06x", Color.getHSBColor(colores[i],1,1).getRGB() & 0x00FFFFFF) + "\">__</span> " + Integer.toBinaryString(i);
             
             if (i<tamGrupo-1)
             {
-                elementosGrupo = elementosGrupo + "\n";
+                elementosGrupo = elementosGrupo + "<br>";
             }
-            
-            colores[i] = ((320/tamGrupo)*i)/360.0f;
         }
+        elementosGrupo = elementosGrupo + "</font></body></html>";
         
+        // Al terminar el ciclo anterior, se procede a crear el campo finito en si mismo
         galoisField = new GF2N(tamGrupo);
+        
+        // Luego, se procede a calcular todos los posibles polinomios reductores que son validos para el campo finito que se acabo de crear
+        // Estos se almacenan en pModulos y se crea tambien su representacion binaria para ser mostrados en una lista desplegable y así el usuario pueda elegir facilmente alguno de ellos
         String[] pModulosEtiquetas = new String[tamGrupo];
         pModulos = new int[tamGrupo];
         int conta = 0;
-        
         for (int i = tamGrupo; i < tamGrupo*2; i++)
         {
             pModulos[conta] = i;
             pModulosEtiquetas[conta] = Integer.toBinaryString(i);
+            
+            // En caso que el polinomio reductor sea irreducible entonces se le agregara la etiqueta "(I)"
+            if (GF2N.isIrreducible(i))
+            {
+                pModulosEtiquetas[conta] = pModulosEtiquetas[conta] + " (I)";
+            }
+            
             conta++;
         }
         
+        // Finalmente, se desplega en pantalla los elementos del campo junto con su color asociado y se anexan los polinomios de reduccion a la lista de seleccion correspondiente
         jcbPoliModulo.setModel(new DefaultComboBoxModel(pModulosEtiquetas));
-        jtaElementosGrupo.setText(elementosGrupo);
+        jepElementosGrupo.setText(elementosGrupo);
     }
     
+    // Metodo para limpiar la ventana principal
     public void limpiar()
     {
         jcbOperacion.setSelectedIndex(-1);
@@ -90,7 +120,7 @@ public class VentanaPrincipal extends JFrame
         jl2 = new javax.swing.JLabel();
         jsExponente = new javax.swing.JSpinner();
         jspElementosGrupo = new javax.swing.JScrollPane();
-        jtaElementosGrupo = new javax.swing.JTextArea();
+        jepElementosGrupo = new javax.swing.JEditorPane();
         jpOpciones = new javax.swing.JPanel();
         jl3 = new javax.swing.JLabel();
         jcbOperacion = new javax.swing.JComboBox<>();
@@ -111,7 +141,8 @@ public class VentanaPrincipal extends JFrame
         jl1.setText("Exponente:");
 
         jl2.setFont(new java.awt.Font("Comic Sans MS", 1, 20)); // NOI18N
-        jl2.setText("Elementos del grupo:");
+        jl2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jl2.setText("Elementos del grupo");
 
         jsExponente.setFont(new java.awt.Font("Comic Sans MS", 0, 18)); // NOI18N
         jsExponente.setModel(new javax.swing.SpinnerNumberModel(1, 1, 7, 1));
@@ -121,14 +152,12 @@ public class VentanaPrincipal extends JFrame
             }
         });
 
-        jspElementosGrupo.setFont(new java.awt.Font("Comic Sans MS", 0, 16)); // NOI18N
-
-        jtaElementosGrupo.setColumns(20);
-        jtaElementosGrupo.setFont(new java.awt.Font("Comic Sans MS", 0, 16)); // NOI18N
-        jtaElementosGrupo.setRows(5);
-        jtaElementosGrupo.setDisabledTextColor(new java.awt.Color(0, 0, 0));
-        jtaElementosGrupo.setEnabled(false);
-        jspElementosGrupo.setViewportView(jtaElementosGrupo);
+        jepElementosGrupo.setEditable(false);
+        jepElementosGrupo.setContentType("text/html"); // NOI18N
+        jepElementosGrupo.setFont(new java.awt.Font("Comic Sans MS", 0, 18)); // NOI18N
+        jepElementosGrupo.setText("");
+        jepElementosGrupo.setDisabledTextColor(new java.awt.Color(0, 0, 0));
+        jspElementosGrupo.setViewportView(jepElementosGrupo);
 
         javax.swing.GroupLayout jpGrupoLayout = new javax.swing.GroupLayout(jpGrupo);
         jpGrupo.setLayout(jpGrupoLayout);
@@ -137,13 +166,16 @@ public class VentanaPrincipal extends JFrame
             .addGroup(jpGrupoLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jpGrupoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jspElementosGrupo, javax.swing.GroupLayout.PREFERRED_SIZE, 338, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jpGrupoLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jspElementosGrupo, javax.swing.GroupLayout.PREFERRED_SIZE, 338, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jl2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jpGrupoLayout.createSequentialGroup()
                         .addComponent(jl1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jsExponente, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jl2))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jsExponente, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jpGrupoLayout.setVerticalGroup(
             jpGrupoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -153,9 +185,9 @@ public class VentanaPrincipal extends JFrame
                     .addComponent(jl1)
                     .addComponent(jsExponente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jl2)
+                .addComponent(jl2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jspElementosGrupo)
+                .addComponent(jspElementosGrupo, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -273,19 +305,22 @@ public class VentanaPrincipal extends JFrame
     private void jsExponenteStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jsExponenteStateChanged
         try
         {
+            // Cada vez que se cambie el grupo que define el campo, entonces se limpia pantalla y se reconstruye el campo
             limpiar();
             construirGrupo();
         }
-        catch (Exception ex)
+        catch (Exception ex) // Si ocurre algun error se imprime este por consola
         {
             System.out.println(ex);
         }
     }//GEN-LAST:event_jsExponenteStateChanged
 
-    // Evento para dibujar 
+    // Evento para dibujar la representacion visual de la operacion elegida del campo
     private void jbDibujarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbDibujarActionPerformed
+        // En primer lugar se recupera el tamaño del campo
         int tamGrupo = colores.length;
         
+        // Luego, si el usuario no ha elegido alguna operacion sobre el campo entonces se emite un mensaje de error y se retorna
         if (jcbOperacion.getSelectedIndex() == -1)
         {
             JOptionPane.showMessageDialog(this, "¡Por favor, seleccione una operación!", "ERROR",JOptionPane.ERROR_MESSAGE);
@@ -294,47 +329,46 @@ public class VentanaPrincipal extends JFrame
         
         try
         {
-//            System.out.println("Viejo: " + galoisField.getReducingPolynomial());
-//            galoisField.setReducingPolynomial(33L);
-//            System.out.println("Nuevo: " + galoisField.getReducingPolynomial());
-            
-            
-//            Long temp = new Long(8);
-//            
-//            System.out.println("Es Irruducible: " + GF2N.isIrreducible(temp));
-//            galoisField.setReducingPolynomial(temp);
-//            System.out.println("Tamaño campo: " + galoisField.getFieldSize() + " - P. Irreducible: " + Integer.toBinaryString((int)galoisField.getReducingPolynomial()));
-//            System.out.println(temp.byteValue());
-            
+            // Ahora, se recupera cual es el polinomio de reduccion elegido por el usuario y se establece el mismo en el campo que se creo previamente
             int poliElegido = pModulos[jcbPoliModulo.getSelectedIndex()];
             galoisField.setReducingPolynomial(poliElegido);
             
+            // Despues por cada elemento del campo se procede a calcular la representacion de la operacion por lo que:
+            
+            // Para i que comienza en cero mientras i sea menor que el numero de elementos del campo HAGA
             for (int i=0; i < tamGrupo; i++)
             {
-                //System.out.print("Fila " + (i+1) + ": ");
+                //System.out.print("Fila " + (i+1) + ": "); // [Opcional] Imprima la fila que se esta calculando
+                
+                // Para j que comienza en cero mientras j sea menor que el numero de elementos del campo HAGA
                 for (int j=0; j < tamGrupo; j++)
                 {
+                    // Si el usuario eligio la operacion cruz(+) entonces
                     if (jcbOperacion.getSelectedIndex() == 0)
                     {
+                        // Sume y guarde el resultado los elementos del campo i y j
                         matrizOp[i][j] = (int) galoisField.add(i, j);
                     }
-                    else
+                    else // sino (O sea, el usuario eligio la operacion asterisco(*))
                     {
+                       // Multiplique y guarde el resultado los elementos del campo i y j
                        matrizOp[i][j] = (int) galoisField.multiply(i, j); 
                     }
-                    //System.out.print(matrizOp[i][j] + "\t");
+                    
+                    //System.out.print(matrizOp[i][j] + "\t"); // [Opcional] Imprima el resultado de la operacion
                 }
-                //System.out.println();
+                
+                //System.out.println(); // [Opcional] Agregue un salto de linea para empezar con la nueva fila de operaciones
             }
-            
         }
-        catch (Exception ex)
+        catch (Exception ex) // En caso de error, se imprime el mismo por consola y se retorna
         {
             System.out.println(ex);
+            return;
         }
         
+        // Apenas se termina de calcular la matriz de representacion de la operacion del campo entonces se procede a dibujar(colorear) la misma
         dibujo.dibujarCampo(matrizOp, colores);
-        
         Icon temp = dibujo.retornarLienzo();
         jlAreaDibujo.setIcon(temp);
     }//GEN-LAST:event_jbDibujarActionPerformed
@@ -343,6 +377,7 @@ public class VentanaPrincipal extends JFrame
     private javax.swing.JButton jbDibujar;
     private javax.swing.JComboBox<String> jcbOperacion;
     private javax.swing.JComboBox<String> jcbPoliModulo;
+    private javax.swing.JEditorPane jepElementosGrupo;
     private javax.swing.JLabel jl1;
     private javax.swing.JLabel jl2;
     private javax.swing.JLabel jl3;
@@ -354,6 +389,5 @@ public class VentanaPrincipal extends JFrame
     private javax.swing.JPanel jpOpciones;
     private javax.swing.JSpinner jsExponente;
     private javax.swing.JScrollPane jspElementosGrupo;
-    private javax.swing.JTextArea jtaElementosGrupo;
     // End of variables declaration//GEN-END:variables
 }
